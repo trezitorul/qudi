@@ -27,8 +27,7 @@ class PiezoGUI(GUIBase):
     """
     
     # CONNECTORS #############################################################
-    # voltagescannerlogic1 = Connector(interface='LaserScannerLogic')
-    # aptlogic = Connector(interface='APTpiezoLogic')
+    aptlogic = Connector(interface='APTpiezoLogic')
 
     # SIGNALS ################################################################
     # sigStartScan = QtCore.Signal()
@@ -58,32 +57,47 @@ class PiezoGUI(GUIBase):
         """
 
         # CONNECTORS PART 2 ###################################################
-        # self._voltscan_logic = self.voltagescannerlogic1()
-        # self._aptlogic = self.aptlogic()
+        self._aptlogic = self.aptlogic()
 
         self._mw = PiezoMainWindow()
 
         # Set default parameters
         self._mw.StepSize.setValue(10)
+        self.stepSize = 10
 
         # Connect buttons to functions
-        self._mw.upButton.clicked.connect(lambda: self.move(1, 1))
-        self._mw.downButton.clicked.connect(lambda: self.move(1, -1))
-        self._mw.leftButton.clicked.connect(lambda: self.move(0, -1))
-        self._mw.rightButton.clicked.connect(lambda: self.move(0, 1))
-        self._mw.zUpButton.clicked.connect(lambda: self.move(2, 1))
-        self._mw.zDownButton.clicked.connect(lambda: self.move(2, -1))
+        self._mw.StepSize.valueChanged.connect(self.stepChanged)
+        self._mw.upButton.clicked.connect(lambda: self.move(1,1))
+        self._mw.downButton.clicked.connect(lambda: self.move(1,-1))
+        self._mw.leftButton.clicked.connect(lambda: self.move(0,-1))
+        self._mw.rightButton.clicked.connect(lambda: self.move(0,1))
+        self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
+        self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
+
+        # Connect update signal
+        self._aptlogic.sigUpdateDisplay.connect(self.updateDisplay)
     
-    def move(self, direction, stepSize=1):
+    def move(self, axis, direction):
         """Move piezo
 
         Args:
-            direction (int): 0->x, 1->y, 2->z
-            stepSize (int, optional): Step size. Defaults to 1.
+            axis (int): 0->x, 1->y, 2->z
+            direction (int, optional): Step direction. Defaults to 1.
         """
-        self.position[direction] += stepSize
-        self._mw.xVal.setText(str(self.position[0]))
-        self._mw.yVal.setText(str(self.position[1]))
-        self._mw.zVal.setText(str(self.position[2]))
+
+        position = self.position
+        position[axis] = self.position[axis] + self.stepSize * direction
+        self._mw.xVal.setText(str(position[0]))
+        self._mw.yVal.setText(str(position[1]))
+        self._mw.zVal.setText(str(position[2]))
         # print(self.position)
-        
+
+        self._aptlogic.setPosition(position)
+    
+    def stepChanged(self):
+        self.stepSize = self._mw.StepSize.value()
+
+    def updateDisplay(self):
+        self._mw.xVal.setText(str(self._aptlogic.getPosition()[0]))
+        self._mw.yVal.setText(str(self._aptlogic.getPosition()[1]))
+        self._mw.zVal.setText(str(self._aptlogic.getPosition()[2]))

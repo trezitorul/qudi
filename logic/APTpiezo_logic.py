@@ -30,35 +30,22 @@ class APTpiezoLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
-    aptpiezo = Connector(interface='APTpiezoInterface')
+    aptpiezo1 = Connector(interface='APTDevice_Piezo_Dummy')
+    aptpiezo2 = Connector(interface='APTDevice_Piezo_Dummy')
 
-    sigRepeat = QtCore.Signal()
+    # signals
+    sigUpdateDisplay = QtCore.Signal()
 
     def on_activate(self):
         """ Prepare logic module for work.
         """
-        self._data_logic = self.aptpiezo()
-        self.stopRequest = False
-        self.bufferLength = 10000
-        self.sigRepeat.connect(self.movingLoop, QtCore.Qt.QueuedConnection)
+        self._aptpiezo1 = self.aptpiezo1()
+        self._aptpiezo2 = self.aptpiezo2()
 
     def on_deactivate(self):
         """ Deactivate modeule.
         """
-        self.stopMoving()
-
-    def startMoving(self):
-        """ Start moving: zero the buffer and call loop function."""
-        self.window_len = 50
-        self.position = [0, 0, 0]
-        self.maxTravel = 200
-        self.module_state.lock()
-        self.sigRepeat.emit()
-
-    def stopMoving(self):
-        """ Ask the measurement loop to stop. """
-        self.stopRequest = True
-
+        pass
 
     def getMaxTravel(self, bay=0, channel=0, timeout=10):
         """
@@ -74,7 +61,7 @@ class APTpiezoLogic(GenericLogic):
         # self.message_event.clear()
 
         # return self.info[channel]["maxTravel"]
-        return self.maxTravel
+        return self._aptpiezo1.get_maxTravel()
 
 
     def setPosition(self, position=None):
@@ -88,13 +75,11 @@ class APTpiezoLogic(GenericLogic):
         :param bay: Index (0-based) of controller bay to send the command.
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
-
-        if self.stopRequest:
-            self.stopRequest = False
-            self.module_state.unlock()
-            return
-
-        self.position = position
+    
+        self._aptpiezo1.set_position(position=position[0], channel=0)
+        self._aptpiezo1.set_position(position=position[1], channel=1)
+        self._aptpiezo2.set_position(position=position[2], channel=0)
+        self.sigUpdateDisplay.emit()
 
 
     def getPosition(self , bay=0, channel=0, timeout=10):
@@ -119,10 +104,11 @@ class APTpiezoLogic(GenericLogic):
         # self.message_event.clear()
 
         # position = self.info[channel]["position"]
-        # maxTravel = self.info[channel]["maxTravel"]
+        maxTravel = self.info[channel]["maxTravel"]
 
         # return position/32767*maxTravel/10
-        return self.position
+        position = [self._aptpiezo1.get_position(channel=0)/32767*maxTravel/10, self._aptpiezo1.get_position(channel=1)/32767*maxTravel/10, self._aptpiezo2.get_position(channel=0)/32767*maxTravel/10]
+        return position
 
 
     def set_zero(self , bay=0, channel=0):
