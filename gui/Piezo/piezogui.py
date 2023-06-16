@@ -67,12 +67,23 @@ class PiezoGUI(GUIBase):
         self._mw.StepSize.setValue(10)
 
         # Connect buttons to functions
+        self._mw.StepSize.valueChanged.connect(self.stepChanged)
         self._mw.upButton.clicked.connect(lambda: self.move("up"))
         self._mw.downButton.clicked.connect(lambda: self.move("down"))
         self._mw.leftButton.clicked.connect(lambda: self.move("left"))
         self._mw.rightButton.clicked.connect(lambda: self.move("right"))
         self._mw.zUpButton.clicked.connect(lambda: self.move("zUp"))
         self._mw.zDownButton.clicked.connect(lambda: self.move("zDown"))
+        self._mw.zDownButton.clicked.connect(self.updateDisplay) # this was just to make sure the update worked
     
     def move(self, name):
         print(name)
+    
+    def stepChanged(self):
+        # Must edit for correct connector
+        self._pid_logic.set_kp(self._mw.P_DoubleSpinBox.value())
+
+    def updateDisplay(self):
+        self._mw.xVal.setText("yuh")
+        
+    
