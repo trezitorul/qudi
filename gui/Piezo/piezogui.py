@@ -81,7 +81,7 @@ class PiezoGUI(GUIBase):
     
     def stepChanged(self):
         # Must edit for correct connector
-        self._pid_logic.set_kp(self._mw.P_DoubleSpinBox.value())
+        self._pid_logic.set_kp(self._mw.StepSize.value())
 
     def updateDisplay(self):
         self._mw.xVal.setText("yuh")
