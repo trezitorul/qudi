@@ -28,7 +28,7 @@ class PiezoGUI(GUIBase):
     
     # CONNECTORS #############################################################
     # voltagescannerlogic1 = Connector(interface='LaserScannerLogic')
-    # savelogic = Connector(interface='SaveLogic')
+    # aptlogic = Connector(interface='APTpiezoLogic')
 
     # SIGNALS ################################################################
     # sigStartScan = QtCore.Signal()
@@ -42,6 +42,7 @@ class PiezoGUI(GUIBase):
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
+        self.position = [0, 0, 0]
 
     def on_deactivate(self):
         """ Reverse steps of activation
@@ -58,8 +59,7 @@ class PiezoGUI(GUIBase):
 
         # CONNECTORS PART 2 ###################################################
         # self._voltscan_logic = self.voltagescannerlogic1()
-        # self._savelogic = self.savelogic()
-
+        # self._aptlogic = self.aptlogic()
 
         self._mw = PiezoMainWindow()
 
@@ -67,12 +67,23 @@ class PiezoGUI(GUIBase):
         self._mw.StepSize.setValue(10)
 
         # Connect buttons to functions
-        self._mw.upButton.clicked.connect(lambda: self.move("up"))
-        self._mw.downButton.clicked.connect(lambda: self.move("down"))
-        self._mw.leftButton.clicked.connect(lambda: self.move("left"))
-        self._mw.rightButton.clicked.connect(lambda: self.move("right"))
-        self._mw.zUpButton.clicked.connect(lambda: self.move("zUp"))
-        self._mw.zDownButton.clicked.connect(lambda: self.move("zDown"))
+        self._mw.upButton.clicked.connect(lambda: self.move(1, 1))
+        self._mw.downButton.clicked.connect(lambda: self.move(1, -1))
+        self._mw.leftButton.clicked.connect(lambda: self.move(0, -1))
+        self._mw.rightButton.clicked.connect(lambda: self.move(0, 1))
+        self._mw.zUpButton.clicked.connect(lambda: self.move(2, 1))
+        self._mw.zDownButton.clicked.connect(lambda: self.move(2, -1))
     
-    def move(self, name):
-        print(name)
+    def move(self, direction, stepSize=1):
+        """Move piezo
+
+        Args:
+            direction (int): 0->x, 1->y, 2->z
+            stepSize (int, optional): Step size. Defaults to 1.
+        """
+        self.position[direction] += stepSize
+        self._mw.xVal.setText(str(self.position[0]))
+        self._mw.yVal.setText(str(self.position[1]))
+        self._mw.zVal.setText(str(self.position[2]))
+        # print(self.position)
+        
