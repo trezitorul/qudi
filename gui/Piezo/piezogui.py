@@ -60,27 +60,19 @@ class PiezoGUI(GUIBase):
         # self._voltscan_logic = self.voltagescannerlogic1()
         # self._savelogic = self.savelogic()
 
-        # Use the inherited class 'Ui_VoltagescannerGuiUI' to create now the
-        # GUI element:
+
         self._mw = PiezoMainWindow()
 
-        # Add save file tag input box
-        # self._mw.save_tag_LineEdit = QtWidgets.QLineEdit(self._mw)
-        # self._mw.save_tag_LineEdit.setMaximumWidth(500)
-        # self._mw.save_tag_LineEdit.setMinimumWidth(200)
-        # self._mw.save_tag_LineEdit.setToolTip('Enter a nametag which will be\n'
-        #                                       'added to the filename.')
-        # self._mw.toolBar.addWidget(self._mw.save_tag_LineEdit)
+        # Set default parameters
+        self._mw.StepSize.setValue(10)
 
-        # Get the image from the logic
-        # self.scan_matrix_image = pg.ImageItem(
-        #     self._voltscan_logic.scan_matrix,
-        #     axisOrder='row-major')
-
-        # self.scan_matrix_image.setRect(
-        #     QtCore.QRectF(
-        #         self._voltscan_logic.scan_range[0],
-        #         0,
-        #         self._voltscan_logic.scan_range[1] - self._voltscan_logic.scan_range[0],
-        #         self._voltscan_logic.number_of_repeats)
-        # )
+        # Connect buttons to functions
+        self._mw.upButton.clicked.connect(lambda: self.move("up"))
+        self._mw.downButton.clicked.connect(lambda: self.move("down"))
+        self._mw.leftButton.clicked.connect(lambda: self.move("left"))
+        self._mw.rightButton.clicked.connect(lambda: self.move("right"))
+        self._mw.zUpButton.clicked.connect(lambda: self.move("zUp"))
+        self._mw.zDownButton.clicked.connect(lambda: self.move("zDown"))
+    
+    def move(self, name):
+        print(name)
