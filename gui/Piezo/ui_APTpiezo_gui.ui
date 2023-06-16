@@ -178,22 +178,37 @@
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QLabel" name="xVal">
+         <property name="font">
+          <font>
+           <pointsize>28</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:28pt;&quot;&gt;0.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>0.0</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="yVal">
+         <property name="font">
+          <font>
+           <pointsize>28</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:28pt;&quot;&gt;0.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>0.0</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="zVal">
+         <property name="font">
+          <font>
+           <pointsize>28</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:28pt;&quot;&gt;0.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>0.0</string>
          </property>
         </widget>
        </item>
