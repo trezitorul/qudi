@@ -104,10 +104,11 @@ class APTpiezoLogic(GenericLogic):
         # self.message_event.clear()
 
         # position = self.info[channel]["position"]
-        maxTravel = self.info[channel]["maxTravel"]
+        # maxTravel = self._aptpiezo1.info[channel-1]["maxTravel"]
 
         # return position/32767*maxTravel/10
-        position = [self._aptpiezo1.get_position(channel=0)/32767*maxTravel/10, self._aptpiezo1.get_position(channel=1)/32767*maxTravel/10, self._aptpiezo2.get_position(channel=0)/32767*maxTravel/10]
+        # position = [self._aptpiezo1.get_position(channel=0)/32767*maxTravel/10, self._aptpiezo1.get_position(channel=1)/32767*maxTravel/10, self._aptpiezo2.get_position(channel=0)/32767*maxTravel/10]
+        position = [self._aptpiezo1.get_position(channel=0), self._aptpiezo1.get_position(channel=1), self._aptpiezo2.get_position(channel=0)]
         return position
 
 

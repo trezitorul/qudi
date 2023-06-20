@@ -229,7 +229,7 @@ class APTDevice_Piezo_Dummy(Base):
         max = self.piezo.info[channel]["maxTravel"]
         positionOut=int((32767.0*position/max) * 10)
 
-        self.piezo.info[channel]["position"] = position
+        self.piezo.info[channel]["position"] = positionOut
 
 
     def get_position(self , bay=0, channel=0):
@@ -250,7 +250,7 @@ class APTDevice_Piezo_Dummy(Base):
         position = self.piezo.info[channel]["position"]
         maxTravel = self.piezo.info[channel]["maxTravel"]
 
-        return position/32767*maxTravel/10
+        return round(position/32767*maxTravel/10, 2)
 
 
     def set_zero(self , bay=0, channel=0):

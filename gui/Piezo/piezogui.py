@@ -87,9 +87,9 @@ class PiezoGUI(GUIBase):
 
         position = self.position
         position[axis] = self.position[axis] + self.stepSize * direction
-        self._mw.xVal.setText(str(position[0]))
-        self._mw.yVal.setText(str(position[1]))
-        self._mw.zVal.setText(str(position[2]))
+        # self._mw.xVal.setText(str(position[0]))
+        # self._mw.yVal.setText(str(position[1]))
+        # self._mw.zVal.setText(str(position[2]))
         # print(self.position)
 
         self._aptlogic.setPosition(position)
