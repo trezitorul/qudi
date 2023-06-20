@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2023 Samuel Peana, Alina Stuleanu, Khoi Pham
 #
 # Implemented using thorlabs_apt_device package developed by Patrick C. Tapping
