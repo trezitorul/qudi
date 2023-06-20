@@ -30,8 +30,8 @@ class APTpiezoLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
-    aptpiezo1 = Connector(interface='APTDevice_Piezo_Dummy')
-    aptpiezo2 = Connector(interface='APTDevice_Piezo_Dummy')
+    aptpiezo1 = Connector(interface='APTPiezo')
+    aptpiezo2 = Connector(interface='APTPiezo')
 
     # signals
     sigUpdateDisplay = QtCore.Signal()
@@ -47,21 +47,21 @@ class APTpiezoLogic(GenericLogic):
         """
         pass
 
-    def getMaxTravel(self, bay=0, channel=0, timeout=10):
-        """
-        Get maximum travel distance.
+    # def getMaxTravel(self, bay=0, channel=0, timeout=10):
+    #     """
+    #     Get maximum travel distance.
 
-        :param bay: Index (0-based) of controller bay to send the command.
-        :param channel: Index (0-based) of controller bay channel to send the command.
-        """
-        # self._log.debug(f"Gets maxTravel on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
-        # self._loop.call_soon_threadsafe(self._write, apt.pz_req_maxtravel(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel]))
+    #     :param bay: Index (0-based) of controller bay to send the command.
+    #     :param channel: Index (0-based) of controller bay channel to send the command.
+    #     """
+    #     # self._log.debug(f"Gets maxTravel on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
+    #     # self._loop.call_soon_threadsafe(self._write, apt.pz_req_maxtravel(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel]))
 
-        # self.message_event.wait(timeout=timeout)
-        # self.message_event.clear()
+    #     # self.message_event.wait(timeout=timeout)
+    #     # self.message_event.clear()
 
-        # return self.info[channel]["maxTravel"]
-        return self._aptpiezo1.get_maxTravel()
+    #     # return self.info[channel]["maxTravel"]
+    #     return self._aptpiezo1.get_maxTravel()
 
 
     def setPosition(self, position=None):
