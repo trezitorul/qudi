@@ -20,8 +20,10 @@ top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi
 """
 
 import numpy as np
+import time
 
 from core.connector import Connector
+from core.configoption import ConfigOption
 from logic.generic_logic import GenericLogic
 from qtpy import QtCore
 
@@ -32,6 +34,7 @@ class APTpiezoLogic(GenericLogic):
 
     aptpiezo1 = Connector(interface='APTPiezo')
     aptpiezo2 = Connector(interface='APTPiezo')
+    queryInterval = ConfigOption('query_interval', 100)
 
     # signals
     sigUpdateDisplay = QtCore.Signal()
@@ -41,11 +44,56 @@ class APTpiezoLogic(GenericLogic):
         """
         self._aptpiezo1 = self.aptpiezo1()
         self._aptpiezo2 = self.aptpiezo2()
+        self.stopRequest = False
+        self.bufferLength = 100
+
+        # delay timer for querying hardware
+        self.queryTimer = QtCore.QTimer()
+        self.queryTimer.setInterval(self.queryInterval)
+        self.queryTimer.setSingleShot(True)
+        self.queryTimer.timeout.connect(self.check_laser_loop, QtCore.Qt.QueuedConnection)
+
+        self.start_query_loop()
 
     def on_deactivate(self):
         """ Deactivate modeule.
         """
         pass
+
+    @QtCore.Slot()
+    def start_query_loop(self):
+        """ Start the readout loop. """
+        self.module_state.run()
+        self.queryTimer.start(self.queryInterval)
+
+    @QtCore.Slot()
+    def stop_query_loop(self):
+        """ Stop the readout loop. """
+        self.stopRequest = True
+        for i in range(10):
+            if not self.stopRequest:
+                return
+            QtCore.QCoreApplication.processEvents()
+            time.sleep(self.queryInterval/1000)
+    
+    @QtCore.Slot()
+    def check_laser_loop(self):
+        """ Get power, current, shutter state and temperatures from laser. """
+        if self.stopRequest:
+            if self.module_state.can('stop'):
+                self.module_state.stop()
+            self.stopRequest = False
+            return
+        qi = self.queryInterval
+        try:
+            self.position = self.getPosition()
+
+        except:
+            qi = 3000
+            self.log.exception("Exception in piezo status loop, throttling refresh rate.")
+
+        self.queryTimer.start(qi)
+        self.sigUpdateDisplay.emit()
 
     # def getMaxTravel(self, bay=0, channel=0, timeout=10):
     #     """
@@ -79,7 +127,6 @@ class APTpiezoLogic(GenericLogic):
         self._aptpiezo1.set_position(position=position[0], channel=0)
         self._aptpiezo1.set_position(position=position[1], channel=1)
         self._aptpiezo2.set_position(position=position[2], channel=0)
-        self.sigUpdateDisplay.emit()
 
 
     def getPosition(self , bay=0, channel=0, timeout=10):

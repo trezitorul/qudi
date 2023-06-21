@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import APTDevice_Piezo
+from hardware.Piezo.APTDevice_Piezo import APTDevice_Piezo
 import time
 
 from core.module import Base
