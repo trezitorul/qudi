@@ -63,16 +63,15 @@ class PowerMeterGUI(GUIBase):
         # Set default parameters
 
         # Connect buttons to functions
-        self._mw.startButton.clicked.connect(self.start) #could also connect directly to logic
+        self._mw.startButton.clicked.connect(self.startGUI) #could also connect directly to logic
 
         # Connect signals
         self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         self.sigStartPM.connect(self._pmlogic.start_query_loop)
 
     def updateDisplay(self):
-        # self._mw.xVal.setText(str(self._aptlogic.getPosition()[0]))
-        # self._mw.yVal.setText(str(self._aptlogic.getPosition()[1]))
-        # self._mw.zVal.setText(str(self._aptlogic.getPosition()[2]))
+        self._mw.powerOutput.setText(str(self._pmlogic.power))
+
         return
     
     def startGUI(self):

@@ -32,7 +32,7 @@ class PowerMeterLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
-    powermeter = Connector(interface='PM100D')
+    powerMeter = Connector(interface='ProcessInterface')
     queryInterval = ConfigOption('query_interval', 100)
 
     # signals
@@ -43,7 +43,7 @@ class PowerMeterLogic(GenericLogic):
     def on_activate(self):
         """ Prepare logic module for work.
         """
-        self._powermeter = self.powermeter()
+        self._powermeter = self.powerMeter()
 
         self.stopRequest = False
         self.bufferLength = 100
@@ -89,7 +89,7 @@ class PowerMeterLogic(GenericLogic):
             return
         qi = self.queryInterval
         try:
-            self.position = self.getPosition() #################################################################
+            self.power = self._powermeter.get_process_value()
 
         except:
             qi = 3000
