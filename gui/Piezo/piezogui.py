@@ -98,6 +98,7 @@ class PiezoGUI(GUIBase):
         self.stepSize = self._mw.StepSize.value()
 
     def updateDisplay(self):
-        self._mw.xVal.setText(str(self._aptlogic.getPosition()[0]))
-        self._mw.yVal.setText(str(self._aptlogic.getPosition()[1]))
-        self._mw.zVal.setText(str(self._aptlogic.getPosition()[2]))
+        self.position = self._aptlogic.getPosition()
+        self._mw.xVal.setText(str(self.position))
+        self._mw.yVal.setText(str(self.position))
+        self._mw.zVal.setText(str(self.position))

@@ -278,11 +278,17 @@ class APTDevice_Piezo(APTDevice):
         :param bay: Index (0-based) of controller bay to send the command.
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
+        max = self.info[channel]["maxTravel"]
 
         if (position == None):
             raise ValueError("MISSING INPUT FOR POSITION")
 
         if (position < 0):
+            positionOut = 0
+            self.info[channel]["position"] = 0
+            self._log.debug(f"Requested position not available. Sets position to 0 on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
+            self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputpos(source=EndPoint.HOST, dest=self.bays[bay], 
+                                                                              chan_ident=self.channels[channel], position=positionOut))
             raise ValueError("POSITION MUST BE POSITIVE")
 
         currMode = self.info[channel]["mode"]
@@ -290,8 +296,16 @@ class APTDevice_Piezo(APTDevice):
         if (currMode != 0x02 and currMode != 0x04):
             raise ValueError("MUST BE IN CLOSED LOOP MODE")
 
-        max = self.info[channel]["maxTravel"]
-        positionOut=int((32767.0*position/max) * 10)
+        positionOut=int((32767.0*position/max))
+
+        if (positionOut > 32767):
+            positionOut = 32767
+            self.info[channel]["position"] = max
+            self._log.debug(f"Requested position not available. Sets position to max={max} on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
+            self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputpos(source=EndPoint.HOST, dest=self.bays[bay], 
+                                                                              chan_ident=self.channels[channel], position=positionOut))
+            raise ValueError("POSITION EXCEEDED MAX. SET POSITION TO MAX")
+
 
         self._log.debug(f"Sets position {position} on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
         self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputpos(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel], position=positionOut))
@@ -323,7 +337,10 @@ class APTDevice_Piezo(APTDevice):
         position = self.info[channel]["position"]
         maxTravel = self.info[channel]["maxTravel"]
 
-        return position/32767*maxTravel/10
+        print("Position: ")
+        print(position)
+
+        return position/32767*maxTravel
 
 
     def set_zero(self , bay=0, channel=0):
@@ -414,7 +431,7 @@ class APTDevice_Piezo(APTDevice):
             self.message_event.set()
 
         elif m.msg == "pz_get_maxtravel":
-            self.info[m.chan_ident-1]["maxTravel"] = m.travel
+            self.info[m.chan_ident-1]["maxTravel"] = m.travel / 10
             self.message_event.set()
 
         elif m.msg == "pz_get_outputpos":
