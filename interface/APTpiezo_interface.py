@@ -25,29 +25,33 @@ from core.meta import InterfaceMetaclass
 
 
 class APTpiezoInterface(metaclass=InterfaceMetaclass):
-    """ An interface to get read one or multiple values from a device.
-
-    Deprecated : This interface is redundant with process_interface. Please use the other if possible?
-    TODO: Remove in future versions ?
+    """ An interface with piezo hardware or dummy.
     """
 
     @abstract_interface_method
-    def getMoveX(self):
-        """ Return a measured value """
+    def set_position(self, position=None , bay=0, channel=0):
+        """
+        Set the position of the piezo.
+        ONLY WORKS IN CLOSED LOOP MODE
+        Units: microns
+
+        :param position: Output position relative to zero position; sets as an integer in the range 
+                         from 0 to 32767, correspond to 0-100% of piezo extension aka maxTravel.
+        :param bay: Index (0-based) of controller bay to send the command.
+        :param channel: Index (0-based) of controller bay channel to send the command.
+        """
+
         pass
 
 
-    @abstract_interface_method
-    def getMoveY(self):
-        """ Return a measured value """
-        pass
+    def get_position(self , bay=0, channel=0):
+        """
+        Get position of the piezo as an integer in the range from 0 to 32767, correspond 
+        to 0-100% of piezo extension aka maxTravel.
+        Units: microns
 
-    @abstract_interface_method
-    def getMoveZ(self):
-        """ Return a measured value """
-        pass
+        :param bay: Index (0-based) of controller bay to send the command.
+        :param channel: Index (0-based) of controller bay channel to send the command.
+        """
 
-
-    @abstract_interface_method
-    def getChannels(self):
         pass

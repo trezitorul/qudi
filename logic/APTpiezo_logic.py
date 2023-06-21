@@ -32,8 +32,8 @@ class APTpiezoLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
-    aptpiezo1 = Connector(interface='APTPiezo')
-    aptpiezo2 = Connector(interface='APTPiezo')
+    aptpiezo1 = Connector(interface='APTpiezoInterface')
+    aptpiezo2 = Connector(interface='APTpiezoInterface')
     queryInterval = ConfigOption('query_interval', 100)
 
     # signals
