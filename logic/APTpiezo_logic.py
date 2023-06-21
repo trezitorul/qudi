@@ -51,7 +51,7 @@ class APTpiezoLogic(GenericLogic):
         self.queryTimer = QtCore.QTimer()
         self.queryTimer.setInterval(self.queryInterval)
         self.queryTimer.setSingleShot(True)
-        self.queryTimer.timeout.connect(self.check_laser_loop, QtCore.Qt.QueuedConnection)
+        self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
 
         self.start_query_loop()
 
@@ -77,8 +77,8 @@ class APTpiezoLogic(GenericLogic):
             time.sleep(self.queryInterval/1000)
     
     @QtCore.Slot()
-    def check_laser_loop(self):
-        """ Get power, current, shutter state and temperatures from laser. """
+    def check_loop(self):
+        """ Get position and update display. """
         if self.stopRequest:
             if self.module_state.can('stop'):
                 self.module_state.stop()
