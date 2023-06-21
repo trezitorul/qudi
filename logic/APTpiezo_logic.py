@@ -36,6 +36,8 @@ class APTpiezoLogic(GenericLogic):
     aptpiezo2 = Connector(interface='APTpiezoInterface')
     queryInterval = ConfigOption('query_interval', 100)
 
+    position = [0,0,0]
+
     # signals
     sigUpdateDisplay = QtCore.Signal()
 
