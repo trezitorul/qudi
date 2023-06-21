@@ -60,7 +60,10 @@ class APTpiezoLogic(GenericLogic):
     def on_deactivate(self):
         """ Deactivate modeule.
         """
-        pass
+        self.stop_query_loop()
+        for i in range(5):
+            time.sleep(self.queryInterval / 1000)
+            QtCore.QCoreApplication.processEvents()
 
     @QtCore.Slot()
     def start_query_loop(self):

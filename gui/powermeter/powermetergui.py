@@ -14,7 +14,7 @@ class PowerMeterMainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         # Get the path to the *.ui file
         this_dir = os.path.dirname(__file__)
-        # ui_file = os.path.join(this_dir, 'ui_APTpiezo_gui.ui')
+        ui_file = os.path.join(this_dir, 'ui_powermeterui.ui')
 
         # Load it
         super().__init__()
@@ -27,10 +27,10 @@ class PowerMeterGUI(GUIBase):
     """
     
     # CONNECTORS #############################################################
-    aptlogic = Connector(interface='PowerMeterLogic')
+    pmlogic = Connector(interface='PowerMeterLogic')
 
     # SIGNALS ################################################################
-    # sigStartScan = QtCore.Signal()
+    sigStartPM = QtCore.Signal()
     # sigStopScan = QtCore.Signal()
     # sigChangeVoltage = QtCore.Signal(float)
     # sigChangeRange = QtCore.Signal(list)
@@ -56,18 +56,24 @@ class PowerMeterGUI(GUIBase):
         """
 
         # CONNECTORS PART 2 ###################################################
-        self._aptlogic = self.aptlogic()
+        self._pmlogic = self.pmlogic()
 
         self._mw = PowerMeterMainWindow()
 
         # Set default parameters
 
         # Connect buttons to functions
+        self._mw.startButton.clicked.connect(self.start) #could also connect directly to logic
 
-        # Connect update signal
+        # Connect signals
+        self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        self.sigStartPM.connect(self._pmlogic.start_query_loop)
 
     def updateDisplay(self):
         # self._mw.xVal.setText(str(self._aptlogic.getPosition()[0]))
         # self._mw.yVal.setText(str(self._aptlogic.getPosition()[1]))
         # self._mw.zVal.setText(str(self._aptlogic.getPosition()[2]))
         return
+    
+    def startGUI(self):
+        self.sigStartPM.emit()
