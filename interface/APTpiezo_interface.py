@@ -43,7 +43,7 @@ class APTpiezoInterface(metaclass=InterfaceMetaclass):
 
         pass
 
-
+    @abstract_interface_method
     def get_position(self , bay=0, channel=0):
         """
         Get position of the piezo as an integer in the range from 0 to 32767, correspond 
