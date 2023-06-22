@@ -66,7 +66,8 @@ class PowerMeterDummy(Base, SimpleDataInterface, ProcessInterface):
         """ Return the power read from the ThorlabsPM100 package """
         #return self._power_meter.read
 
-        return random.randint(0, 100)
+        #return random.randint(0, 100)
+        return 50
 
     def get_process_value(self):
         """ Return a measured value """

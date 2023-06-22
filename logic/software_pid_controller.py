@@ -134,6 +134,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
             self.history[0, -1] = self.pv
             self.history[1, -1] = self.cv
             self.history[2, -1] = self.setpoint
+            print("Cv: "+str(self.cv))
             self.sigNewValue.emit(self.cv)
         else:
             self.cv = self.manualvalue
@@ -142,6 +143,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
                 self.cv = limits[1]
             if self.cv < limits[0]:
                 self.cv = limits[0]
+            print("Cv: "+str(self.cv))
             self.sigNewValue.emit(self.cv)
 
         self.timer.start(self.timestep)

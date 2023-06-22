@@ -112,6 +112,15 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
         """
         pass
 
+    def get_control_limit(self, channel=None):
+        """ Return limits within which the controlled value can be set as a tuple of (low limit, high limit)
+
+        @param (int) channel: (Optional) The number of the channel
+
+        @return (tuple): The limits as (low limit, high limit)
+        """
+        return (0, 100)
+
 
     def process_control_get_number_channels(self):
         """ Function to get the number of channels available for control
