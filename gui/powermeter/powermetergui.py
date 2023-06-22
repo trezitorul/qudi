@@ -73,6 +73,7 @@ class PowerMeterGUI(GUIBase):
         # Connect signals
         self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         self.sigStartPM.connect(self._pmlogic.start_query_loop)
+        self.sigStartPM.connect(self._pidlogic.startFunc)
 
 
     def updateDisplay(self):

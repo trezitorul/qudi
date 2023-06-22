@@ -87,6 +87,9 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
         self.integrated = 0
         self.countdown = 2
 
+        #self.timer.start(self.timestep) moved into start func
+    
+    def startFunc(self):
         self.timer.start(self.timestep)
 
     def on_deactivate(self):
