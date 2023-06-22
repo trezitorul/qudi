@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 from gui.guibase import GUIBase
 from core.connector import Connector
@@ -61,7 +62,21 @@ class PowerMeterGUI(GUIBase):
         self._pidlogic = self.pidlogic()
 
         self._mw = PowerMeterMainWindow()
+        
+        # Plot labels.
+        self._pw = self._mw.positionTrace
 
+        self.plot1 = self._pw.plotItem
+        self.plot1.setLabel('left', 'Power Output', units='W', color='#00ff00')
+        self.plot1.setLabel('bottom', 'Step passed')
+
+        self.curvearr = []
+        ## Create an empty plot curve to be filled later, set its pen
+        self.curvearr.append(self.plot1.plot())
+        self.curvearr[-1].setPen(palette.c1)
+
+        self.timePass = 0
+        self.powerOutputArr = []
         # Set default parameters
 
         # Connect buttons to functions
@@ -72,12 +87,25 @@ class PowerMeterGUI(GUIBase):
         
         # Connect signals
         self._pidlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        self._pidlogic.sigUpdatePMDisplay.connect(self.updateData)
         #self.sigStartPM.connect(self._pmlogic.start_query_loop)
         self.sigStartPM.connect(self._pidlogic.startFunc)
 
 
     def updateDisplay(self):
         self._mw.powerOutput.setText(str(self._pidlogic.pv))
+
+
+    def updateData(self):
+        """ The function that grabs the data and sends it to the plot.
+        """
+        self.timePass += 1
+        self.powerOutputArr.append(self._pidlogic.pv)
+        
+        self.curvearr[0].setData(
+            y = np.asarray(self.powerOutputArr),
+            x = np.arange(0, self.timePass)
+            )
 
 
     def setPowerInput(self):
