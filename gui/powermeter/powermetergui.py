@@ -64,15 +64,23 @@ class PowerMeterGUI(GUIBase):
 
         # Connect buttons to functions
         self._mw.startButton.clicked.connect(self.startGUI) #could also connect directly to logic
-
+        
+        # Connect spin box
+        self._mw.powerInput.valueChanged.connect(self.setPowerInput)
+        
         # Connect signals
         self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         self.sigStartPM.connect(self._pmlogic.start_query_loop)
 
+
     def updateDisplay(self):
         self._mw.powerOutput.setText(str(self._pmlogic.power))
-
         return
-    
+
+
+    def setPowerInput(self):
+        self.powerInput = self._mw.powerInput.value()
+
+
     def startGUI(self):
         self.sigStartPM.emit()
