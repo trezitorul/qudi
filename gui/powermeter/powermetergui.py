@@ -28,6 +28,7 @@ class PowerMeterGUI(GUIBase):
     
     # CONNECTORS #############################################################
     pmlogic = Connector(interface='PowerMeterLogic')
+    pidlogic = Connector(interface='SoftPIDController')
 
     # SIGNALS ################################################################
     sigStartPM = QtCore.Signal()
@@ -57,6 +58,7 @@ class PowerMeterGUI(GUIBase):
 
         # CONNECTORS PART 2 ###################################################
         self._pmlogic = self.pmlogic()
+        self._pidlogic = self.pidlogic()
 
         self._mw = PowerMeterMainWindow()
 
@@ -75,11 +77,11 @@ class PowerMeterGUI(GUIBase):
 
     def updateDisplay(self):
         self._mw.powerOutput.setText(str(self._pmlogic.power))
-        return
 
 
     def setPowerInput(self):
         self.powerInput = self._mw.powerInput.value()
+        self._pidlogic.set_setpoint(self.powerInput)
 
 
     def startGUI(self):

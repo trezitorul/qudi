@@ -27,7 +27,7 @@ class PIDControllerInterface(metaclass=InterfaceMetaclass):
     """ This interface is used to control a PID device.
 
     From Wikipedia : https://en.wikipedia.org/wiki/PID_controller
-    A proportional–integral–derivative controller (PID controller or three-term controller) is a control loop mechanism
+    A proportional-integral-derivative controller (PID controller or three-term controller) is a control loop mechanism
     employing feedback that is widely used in industrial control systems and a variety of other applications requiring
     continuously modulated control. A PID controller continuously calculates an error value e(t) as the difference
     between a desired setpoint (SP) and a measured process variable (PV) and applies a correction based on proportional,

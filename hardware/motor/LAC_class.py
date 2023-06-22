@@ -70,7 +70,9 @@ class LAC:
     # nearest integer
     def set_retract_limit(self, value):
         self.send_data(self.SET_RETRACT_LIMIT, value)
-
+    
+    # 0 -> 1023
+    
     # How far forward the actuator can go. A value
     # of 1023 hits the mechanical stop, but this
     # is not recommended. See above for math
