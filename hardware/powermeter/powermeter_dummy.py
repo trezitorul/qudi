@@ -46,6 +46,9 @@ class PowerMeterDummy(Base, SimpleDataInterface, ProcessInterface):
     _timeout = ConfigOption('timeout', 1)
     _power_meter = None
 
+    power = 0
+    count = 1
+
     def on_activate(self):
         """ Startup the module """
         return
@@ -67,7 +70,10 @@ class PowerMeterDummy(Base, SimpleDataInterface, ProcessInterface):
         #return self._power_meter.read
 
         #return random.randint(0, 100)
-        return 50
+        return self.power
+
+    def set_power(self, power):
+        self.power = power
 
     def get_process_value(self):
         """ Return a measured value """

@@ -52,7 +52,7 @@ class LACDummy(Base, MotorInterface, ProcessControlInterface):
     # The value you want to send is calculated by (distance * 1023)/stroke
     # where distance is intended distance and stroke is max extension length, 
     # all values in mm. Round to nearest integer
-    def move_abs(self, position):
+    def move_abs(self, setPos):
         """ Moves stage to absolute position (absolute movement)
 
         @param dict param_dict: dictionary, which passes all the relevant
@@ -63,8 +63,14 @@ class LACDummy(Base, MotorInterface, ProcessControlInterface):
 
         @return int: error code (0:OK, -1:error)
         """
-        self.position = position
-        print(position)
+        self.setPos = setPos
+    
+    def update(self):
+        if (self.setPos > self.position):
+            self.position = self.position + .1
+        elif (self.setPos < self.position):
+            self.position = self.position - .1
+        print("LAC pos: " + str(self.position) + "Set pos: " + str(self.setPos))
 
 
     def get_pos(self, param_list=None):

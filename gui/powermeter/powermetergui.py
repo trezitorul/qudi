@@ -27,7 +27,7 @@ class PowerMeterGUI(GUIBase):
     """
     
     # CONNECTORS #############################################################
-    pmlogic = Connector(interface='PowerMeterLogic')
+    #pmlogic = Connector(interface='PowerMeterLogic')
     pidlogic = Connector(interface='SoftPIDController')
 
     # SIGNALS ################################################################
@@ -57,7 +57,7 @@ class PowerMeterGUI(GUIBase):
         """
 
         # CONNECTORS PART 2 ###################################################
-        self._pmlogic = self.pmlogic()
+        #self._pmlogic = self.pmlogic()
         self._pidlogic = self.pidlogic()
 
         self._mw = PowerMeterMainWindow()
@@ -71,13 +71,13 @@ class PowerMeterGUI(GUIBase):
         self._mw.powerInput.valueChanged.connect(self.setPowerInput)
         
         # Connect signals
-        self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        self.sigStartPM.connect(self._pmlogic.start_query_loop)
+        self._pidlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        #self.sigStartPM.connect(self._pmlogic.start_query_loop)
         self.sigStartPM.connect(self._pidlogic.startFunc)
 
 
     def updateDisplay(self):
-        self._mw.powerOutput.setText(str(self._pmlogic.power))
+        self._mw.powerOutput.setText(str(self._pidlogic.pv))
 
 
     def setPowerInput(self):

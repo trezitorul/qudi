@@ -41,7 +41,7 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
         # self._LAC.set_accuracy(value=0)
 
         # Set position to 0
-        self.position = 75
+        self.position = 0
 
 
     def on_deactivate(self):

@@ -42,15 +42,18 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
     # config opt
     timestep = ConfigOption(default=100)
+    dummy = ConfigOption(default=True)
 
     # status vars
     kP = StatusVar(default=1)
     kI = StatusVar(default=1)
     kD = StatusVar(default=1)
-    setpoint = StatusVar(default=273.15)
+    setpoint = StatusVar(default=50)
     manualvalue = StatusVar(default=0)
 
     sigNewValue = QtCore.Signal(float)
+    sigUpdate = QtCore.Signal()
+    sigUpdatePMDisplay = QtCore.Signal()
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
@@ -80,12 +83,17 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         self.timer.timeout.connect(self._calcNextStep, QtCore.Qt.QueuedConnection)
         self.sigNewValue.connect(self._control.set_control_value)
+        self.sigUpdate.connect(self._control.update)
 
         self.history = np.zeros([3, 5])
         self.savingState = False
         self.enable = False
         self.integrated = 0
         self.countdown = 2
+
+        self.kP=0.02
+        self.kI=0
+        self.kD=0.01
 
         #self.timer.start(self.timestep) moved into start func
     
@@ -108,6 +116,8 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         if self.countdown > 0:
             self.countdown -= 1
+            print(self.setpoint)
+            print(self.pv)
             self.previousdelta = self.setpoint - self.pv
             print('Countdown: ', self.countdown)
         elif self.countdown == 0:
@@ -117,13 +127,17 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         if self.enable:
             delta = self.setpoint - self.pv
+            print("Delta "+str(delta))
             self.integrated += delta
             ## Calculate PID controller:
             self.P = self.kP * delta
+            print("kP "+ str(self.kP))
+            print("P "+str(self.P))
             self.I = self.kI * self.timestep * self.integrated
             self.D = self.kD / self.timestep * (delta - self.previousdelta)
 
             self.cv += self.P + self.I + self.D
+            print(self.cv)
             self.previousdelta = delta
 
             ## limit contol output to maximum permissible limits
@@ -137,8 +151,8 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
             self.history[0, -1] = self.pv
             self.history[1, -1] = self.cv
             self.history[2, -1] = self.setpoint
-            print("Cv: "+str(self.cv))
             self.sigNewValue.emit(self.cv)
+            self.sigUpdate.emit()
         else:
             self.cv = self.manualvalue
             limits = self._control.get_control_limit()
@@ -146,10 +160,12 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
                 self.cv = limits[1]
             if self.cv < limits[0]:
                 self.cv = limits[0]
-            print("Cv: "+str(self.cv))
             self.sigNewValue.emit(self.cv)
+            self.sigUpdate.emit()
 
         self.timer.start(self.timestep)
+        self._process.set_power(self._control.get_pos())
+        self.sigUpdatePMDisplay.emit()
 
     def startLoop(self):
         """ Start the control loop. """
