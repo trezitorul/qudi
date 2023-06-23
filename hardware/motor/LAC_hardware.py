@@ -22,16 +22,16 @@ from PyQt5.QtCore import QObject
 from interface.motor_interface import MotorInterface
 from interface.process_control_interface import ProcessControlInterface
 from core.module import Base
-from LAC_class import LAC
+from hardware.motor.LAC_class import LAC
 
 
 class LACHardware(Base, MotorInterface, ProcessControlInterface):
-    def __init__(self):
-        super().__init__()
-        self._LAC = LAC()
+    # def __init__(self):
+    #     super().__init__()
     
     
     def on_activate(self):
+        self._LAC = LAC()
         # Reset the LAC
         self._LAC.reset()
         self._LAC.set_accuracy(value=0)
