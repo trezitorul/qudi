@@ -52,7 +52,8 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
 
     def on_activate(self):
         """ Startup the module """
-
+        IDQuery = True
+        resetDevice = True
         self.tlPM = TLPM()
         self.deviceCount = c_uint32()
         self.tlPM.findRsrc(byref(self.deviceCount))
@@ -67,12 +68,16 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
             print("Resource name of device", i, ":", c_char_p(self.resourceName.raw).value)
         print("")
         self.tlPM.close()
-
+        # time.sleep(5)
+        i=0
         if i not in range(0, self.deviceCount.value):
             print(f"Device index {i} out of range [0,{self.deviceCount.value}]")
         else:
+            print(self.resourceName)
             self.tlPM.getRsrcName(c_int(i), self.resourceName)
-            self.tlPM = TLPM()
+            print(self.resourceName)
+            print(c_char_p(self.resourceName.raw).value)
+            # self.tlPM = TLPM()
             self.tlPM.open(self.resourceName, c_bool(IDQuery), c_bool(resetDevice))
 
             message = create_string_buffer(1024)
@@ -81,7 +86,7 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
             print("Last calibration date: ",c_char_p(message.raw).value)
             print("")
 
-            time.sleep(0.1) #minimize?
+            time.sleep(1) #minimize?
         
         self.power = 0
 
