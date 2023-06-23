@@ -83,7 +83,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         self.timer.timeout.connect(self._calcNextStep, QtCore.Qt.QueuedConnection)
         self.sigNewValue.connect(self._control.set_control_value)
-        self.sigUpdate.connect(self._control.update)
+        # self.sigUpdate.connect(self._control.update)
 
         self.history = np.zeros([3, 5])
         self.savingState = False

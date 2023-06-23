@@ -48,6 +48,8 @@ class PowerMeterLogic(GenericLogic):
         self.stopRequest = False
         self.bufferLength = 100
 
+        self.power = 0
+
         # delay timer for querying hardware
         self.queryTimer = QtCore.QTimer()
         self.queryTimer.setInterval(self.queryInterval)
@@ -78,7 +80,7 @@ class PowerMeterLogic(GenericLogic):
                 return
             QtCore.QCoreApplication.processEvents()
             time.sleep(self.queryInterval/1000)
-    
+
     @QtCore.Slot()
     def check_loop(self):
         """ Get power and update display. """

@@ -45,8 +45,8 @@ class LACLogic(GenericLogic):
         """
         self._LACmotor = self.LACmotor()
 
-        # self.stopRequest = False
-        # self.bufferLength = 100
+        self.stopRequest = False
+        self.bufferLength = 100
         self.position = 0
 
         # delay timer for querying hardware

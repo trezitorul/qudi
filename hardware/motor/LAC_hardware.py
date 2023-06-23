@@ -79,7 +79,11 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
         @return dict: with keys being the axis labels and item the current
                       position.
         """
-        self.position = self._LAC.get_feedback() / 1023 * 100
+        position = self._LAC.get_feedback()
+        
+        if (position is not None):
+            self.position = position / 1023 * 100
+        
         return self.position
 
 
