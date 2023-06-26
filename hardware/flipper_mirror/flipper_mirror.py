@@ -1,3 +1,28 @@
+# -*- coding: utf-8 -*-
+
+"""
+Qudi is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Qudi is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Qudi. If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
+top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
+"""
+
+from PyQt5.QtCore import QObject
+from interface.motor_interface import MotorInterface
+from interface.process_control_interface import ProcessControlInterface
+from core.module import Base
+
 import os
 import time
 import logging
@@ -20,9 +45,21 @@ from Thorlabs.MotionControl.DeviceManagerCLI import DeviceManagerCLI
 from Thorlabs.MotionControl.DeviceManagerCLI import DeviceNotReadyException 
 from Thorlabs.MotionControl.FilterFlipperCLI import FilterFlipper
 
-class MFF101FlipperMirror:
-    def __init__(self,deviceID):
-        self.device = self.SetupDevice(deviceID)
+class FlipperMirror(Base):
+
+    # def __init__(self,deviceID):
+    #     self.device = self.SetupDevice(deviceID)
+
+    def on_activate(self):
+        deviceID = "37005466"
+        self._FlipperMirror = self.SetupDevice(deviceID)
+
+        # Reser the flipper
+        self._FlipperMirror.HomeMirror()
+        self._FlipperMirror.SetMode("on")
+    
+    def on_deactivate(self):
+            pass
     
     def SetupDevice(self,deviceID):
         '''

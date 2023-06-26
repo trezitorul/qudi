@@ -40,8 +40,9 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
         self._LAC.set_derivative_gain(1)
         # self._LAC.set_accuracy(value=0)
 
-        # Set position to 0
-        self.position = 0
+        # Set position to last position?
+        # self.position = self.get_pos()
+        self.position = 99
 
 
     def on_deactivate(self):
