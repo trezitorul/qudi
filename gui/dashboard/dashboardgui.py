@@ -9,31 +9,30 @@ from qtpy import QtWidgets
 from qtpy import uic
 from gui.colordefs import QudiPalettePale as palette
 
-class PowerMeterMainWindow(QtWidgets.QMainWindow):
+class DashboardMainWindow(QtWidgets.QMainWindow):
     """ Create the Main Window based on the *.ui file. """
 
     def __init__(self):
         # Get the path to the *.ui file
         this_dir = os.path.dirname(__file__)
-        ui_file = os.path.join(this_dir, 'ui_powermeterui.ui')
+        ui_file = os.path.join(this_dir, 'ui_dashboard.ui')
 
         # Load it
         super().__init__()
         uic.loadUi(ui_file, self)
         self.show()
 
-class PowerMeterGUI(GUIBase):
+class DashboardGUI(GUIBase):
     """
 
     """
     
     # CONNECTORS #############################################################
-    # pmlogic = Connector(interface='PowerMeterLogic')
+    pmlogic = Connector(interface='PowerMeterLogic')
     pidlogic = Connector(interface='SoftPIDController')
-    # laclogic = Connector(interface='LACLogic')
+    laclogic = Connector(interface='LACLogic')
 
     # SIGNALS ################################################################
-    sigStartPM = QtCore.Signal()
    
 
     def __init__(self, config, **kwargs):
@@ -53,11 +52,11 @@ class PowerMeterGUI(GUIBase):
         """
 
         # CONNECTORS PART 2 ###################################################
-        # self._pmlogic = self.pmlogic()
+        self._pmlogic = self.pmlogic()
         self._pidlogic = self.pidlogic()
-        # self._laclogic = self.laclogic()
+        self._laclogic = self.laclogic()
 
-        self._mw = PowerMeterMainWindow()
+        self._mw = DashboardMainWindow()
         
         # Plot labels.
         self._pw = self._mw.positionTrace
@@ -76,7 +75,9 @@ class PowerMeterGUI(GUIBase):
         # Set default parameters
 
         # Connect buttons to functions
-        self._mw.startButton.clicked.connect(self.startGUI) #could also connect directly to logic
+        self._mw.startButton.clicked.connect(self.startPID) #could also connect directly to logic
+        self._mw.stopButton.clicked.connect(self._pidlogic.stopLoop)
+        self._mw.manualButton.clicked.connect(self.startManual)
 
         # Connect spin box
         self._mw.powerInput.valueChanged.connect(self.setPowerInput)
@@ -86,13 +87,12 @@ class PowerMeterGUI(GUIBase):
         self._pidlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         self._pidlogic.sigUpdatePMDisplay.connect(self.updatePlot)
 
-        # self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        # self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
+        self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
 
         # self._laclogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        # self.sigStartPM.connect(self._laclogic.start_query_loop)
-        # self.sigStartPM.connect(self._pmlogic.start_query_loop)
-        self.sigStartPM.connect(self._pidlogic.startFunc)
+
+
 
 
     def updateDisplay(self):
@@ -119,11 +119,18 @@ class PowerMeterGUI(GUIBase):
 
 
     def setPosInput(self):
-        # self.posInput = self._mw.posInput.value()
-        # self._laclogic.set_pos(self.posInput)
+
+        self.posInput = self._mw.posInput.value()
+        self._laclogic.set_pos(self.posInput)
         return
 
 
+    def startPID(self):
+        self._pidlogic.startFunc()
+        self._laclogic.stop_query_loop()
+        self._pmlogic.stop_query_loop()
 
-    def startGUI(self):
-        self.sigStartPM.emit()
+    def startManual(self):
+        self._laclogic.start_query_loop()
+        self._pmlogic.start_query_loop()
+        self._pidlogic.stopLoop()
