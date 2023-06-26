@@ -54,6 +54,7 @@ class QueryLoopLogic(GenericLogic):
         self.bufferLength = 100
 
         self.power = 0
+        self.enable = False
 
         self.sigStartQuery.connect(self.start_query_loop)
         self.sigStopQuery.connect(self.stop_query_loop)
@@ -77,22 +78,28 @@ class QueryLoopLogic(GenericLogic):
     @QtCore.Slot()
     def start_query_loop(self):
         """ Start the readout loop. """
-        # if (self.module_state.is_finished()):
-        self.module_state.run()
-        self.queryTimer.start(self.queryInterval)
+        if (not self.enable):
+            self.enable = True
+            self.module_state.run()
+            self.queryTimer.start(self.queryInterval)
+        else:
+            pass
 
 
     @QtCore.Slot()
     def stop_query_loop(self):
         """ Stop the readout loop. """
-        # if (not self.module_state.is_finished()):
-        self.module_state.stop()
-        self.stopRequest = True
-        for i in range(10):
-            if not self.stopRequest:
-                return
-            QtCore.QCoreApplication.processEvents()
-            time.sleep(self.queryInterval/1000)
+        if (self.enable):
+            self.enable = False
+            self.module_state.stop()
+            self.stopRequest = True
+            for i in range(10):
+                if not self.stopRequest:
+                    return
+                QtCore.QCoreApplication.processEvents()
+                time.sleep(self.queryInterval/1000)
+        else:
+            pass
 
 
     @QtCore.Slot()

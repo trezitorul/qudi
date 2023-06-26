@@ -176,17 +176,23 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
     def startLoop(self):
         """ Start the control loop. """
-        self.timer.start(self.timestep)
-        self.countdown = 2
+        if(not self.enable):
+            self.timer.start(self.timestep)
+            self.countdown = 2
+        else:
+            pass
 
     def stopLoop(self):
         """ Stop the control loop. """
-        try:
-            self.timer.stop()
-        except:
+        if(self.enable):
+            try:
+                self.timer.stop()
+            except:
+                pass
+            self.countdown = -1
+            self.enable = False
+        else:
             pass
-        self.countdown = -1
-        self.enable = False
 
     def getSavingState(self):
         """ Find out if we are keeping data for saving later.
