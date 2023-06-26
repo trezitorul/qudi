@@ -35,7 +35,7 @@ class DashboardGUI(GUIBase):
     querylogic = Connector(interface='QueryLoopLogic')
 
     # SIGNALS ################################################################
-    sigStartPM = QtCore.Signal()
+    sigStartGUI = QtCore.Signal()
 
 
     def __init__(self, config, **kwargs):
@@ -144,25 +144,35 @@ class DashboardGUI(GUIBase):
 
 
     def startPID(self):
-        self._querylogic.stop_query_loop()
+        # self._querylogic.stop_query_loop()
+        self._querylogic.sigStopQuery.emit()
         # time.sleep(3)
         # self.sigStartPM.emit()
         self._mw.startButton.setEnabled(True)
         self._mw.stopButton.setEnabled(True)
-        self._mw.startButton.clicked.connect(self._pidlogic.startFunc) #could also connect directly to logic
-        self._mw.stopButton.clicked.connect(self._pidlogic.stopLoop)
+        self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
+        self._mw.stopButton.clicked.connect(self.emitStopPID)
         self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
         self._pidlogic.sigUpdatePIDDisplay.connect(self.updatePlot)
-        self._pidlogic.startFunc()
+        # self._pidlogic.startFunc()
         # self._laclogic.stop_query_loop()
         # self._pmlogic.stop_query_loop()
+
+
+    def emitStartPID(self):
+        self._pidlogic.sigStartPID.emit()
+
+
+    def emitStopPID(self):
+        self._pidlogic.sigStopPID.emit()
 
 
     def startManual(self):
         self._pidlogic.stopLoop()
         # time.sleep(3)
         # Start loop
-        self._querylogic.start_query_loop()
+        # self._querylogic.start_query_loop()
+        self._querylogic.sigStartQuery.emit()
 
         # Disable buttons
         self._mw.startButton.setEnabled(False)

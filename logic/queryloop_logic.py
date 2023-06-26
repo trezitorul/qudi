@@ -39,6 +39,8 @@ class QueryLoopLogic(GenericLogic):
 
     # signals
     sigUpdateVariable = QtCore.Signal(bool)
+    sigStartQuery = QtCore.Signal()
+    sigStopQuery = QtCore.Signal()
 
     # Connect signals
 
@@ -52,6 +54,9 @@ class QueryLoopLogic(GenericLogic):
         self.bufferLength = 100
 
         self.power = 0
+
+        self.sigStartQuery.connect(self.start_query_loop)
+        self.sigStopQuery.connect(self.stop_query_loop)
 
         # delay timer for querying hardware
         self.queryTimer = QtCore.QTimer()

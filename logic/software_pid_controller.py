@@ -54,6 +54,8 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
     sigNewValue = QtCore.Signal(float)
     sigUpdate = QtCore.Signal()
     sigUpdatePIDDisplay = QtCore.Signal(bool)
+    sigStartPID = QtCore.Signal()
+    sigStopPID = QtCore.Signal()
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
@@ -71,6 +73,9 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
     def on_activate(self):
         """ Initialisation performed during activation of the module.
         """
+        self.sigStartPID.connect(self.startLoop)
+        self.sigStopPID.connect(self.stopLoop)
+
         self._process = self.process()
         self._control = self.control()
         self.relErr=0.05
@@ -95,10 +100,10 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
         self.kI=0
         self.kD=0.01
 
-        #self.timer.start(self.timestep) moved into start func
+        # self.timer.start(self.timestep) # moved into start func
     
-    def startFunc(self):
-        self.timer.start(self.timestep)
+    # def startFunc(self):
+    #     self.timer.start(self.timestep)
 
     def on_deactivate(self):
         """ Perform required deactivation.
@@ -171,11 +176,15 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
     def startLoop(self):
         """ Start the control loop. """
+        self.timer.start(self.timestep)
         self.countdown = 2
 
     def stopLoop(self):
         """ Stop the control loop. """
-        self.timer.stop()
+        try:
+            self.timer.stop()
+        except:
+            pass
         self.countdown = -1
         self.enable = False
 
