@@ -68,14 +68,14 @@ class DashboardGUI(GUIBase):
         # Set default parameters
 
         # Connect buttons to functions
-        # self._mw.startButton.clicked.connect(self._pidlogic.startFunc) #could also connect directly to logic
-        # self._mw.stopButton.clicked.connect(self._pidlogic.stopLoop)
+        self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
+        self._mw.stopButton.clicked.connect(self.emitStopPID)
         self._mw.manualButton.clicked.connect(self.startManual)
         self._mw.PIDbutton.clicked.connect(self.startPID)
 
         # Connect spin box
-        # self._mw.powerInput.valueChanged.connect(self.setPowerInput)
-        # self._mw.posInput.valueChanged.connect(self.setPosInput)
+        self._mw.powerInput.valueChanged.connect(self.setPowerInput)
+        self._mw.posInput.valueChanged.connect(self.setPosInput)
 
         # Connect signals
         # self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
@@ -102,11 +102,11 @@ class DashboardGUI(GUIBase):
 
     def updateDisplay(self, is_PID):
         if (is_PID):
-            self._mw.powerOutput.setText(str(self._pidlogic.pv))
-            self._mw.posOutput.setText(str(self._pidlogic.cv))
+            self._mw.powerOutput.setText(str(round(self._pidlogic.pv, 3)))
+            self._mw.posOutput.setText(str(round(self._pidlogic.cv, 3)))
         else:
-            self._mw.powerOutput.setText(str(self._pmlogic.power))
-            self._mw.posOutput.setText(str(self._laclogic.position))
+            self._mw.powerOutput.setText(str(round(self._pmlogic.power, 3)))
+            self._mw.posOutput.setText(str(round(self._laclogic.position, 3)))
 
 
     def updatePlot(self, is_PID):
@@ -150,8 +150,8 @@ class DashboardGUI(GUIBase):
         # self.sigStartPM.emit()
         self._mw.startButton.setEnabled(True)
         self._mw.stopButton.setEnabled(True)
-        self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
-        self._mw.stopButton.clicked.connect(self.emitStopPID)
+        # self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
+        # self._mw.stopButton.clicked.connect(self.emitStopPID)
         self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
         self._pidlogic.sigUpdatePIDDisplay.connect(self.updatePlot)
         # self._pidlogic.startFunc()
@@ -168,7 +168,7 @@ class DashboardGUI(GUIBase):
 
 
     def startManual(self):
-        self._pidlogic.stopLoop()
+        self._pidlogic.sigStopPID.emit()
         # time.sleep(3)
         # Start loop
         # self._querylogic.start_query_loop()
@@ -179,7 +179,3 @@ class DashboardGUI(GUIBase):
         self._mw.stopButton.setEnabled(False)
 
         self._mw.posInput.valueChanged.connect(self.setPosInput)
-        # self._mw.startButton.clicked.connect(self._laclogic.start_query_loop) #could also connect directly to logic
-        # self._mw.stopButton.clicked.connect(self._laclogic.stop_query_loop)
-        # self._laclogic.start_query_loop()
-        # self._pmlogic.start_query_loop()
