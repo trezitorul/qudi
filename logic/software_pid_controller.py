@@ -73,7 +73,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
         """
         self._process = self.process()
         self._control = self.control()
-
+        self.relErr=0.05
         self.previousdelta = 0
         self.cv = self._control.get_control_value()
 
@@ -91,7 +91,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
         self.integrated = 0
         self.countdown = 2
 
-        self.kP=0.02
+        self.kP=0.05 #OK
         self.kI=0
         self.kD=0.01
 
@@ -127,6 +127,8 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         if self.enable:
             delta = self.setpoint - self.pv
+            if (abs(delta)/self.pv)<=self.relErr:
+                delta=0
             print("Delta "+str(delta))
             self.integrated += delta
             ## Calculate PID controller:
@@ -164,7 +166,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
             self.sigUpdate.emit()
 
         self.timer.start(self.timestep)
-        self._process.set_power(self._control.get_pos())
+        # self._process.set_power(self._control.get_pos())
         self.sigUpdatePMDisplay.emit()
 
     def startLoop(self):

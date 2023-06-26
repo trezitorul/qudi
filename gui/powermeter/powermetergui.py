@@ -28,19 +28,13 @@ class PowerMeterGUI(GUIBase):
     """
     
     # CONNECTORS #############################################################
-    pmlogic = Connector(interface='PowerMeterLogic')
-    # pidlogic = Connector(interface='SoftPIDController')
-    laclogic = Connector(interface='LACLogic')
+    # pmlogic = Connector(interface='PowerMeterLogic')
+    pidlogic = Connector(interface='SoftPIDController')
+    # laclogic = Connector(interface='LACLogic')
 
     # SIGNALS ################################################################
     sigStartPM = QtCore.Signal()
-    # sigStopScan = QtCore.Signal()
-    # sigChangeVoltage = QtCore.Signal(float)
-    # sigChangeRange = QtCore.Signal(list)
-    # sigChangeResolution = QtCore.Signal(float)
-    # sigChangeSpeed = QtCore.Signal(float)
-    # sigChangeLines = QtCore.Signal(int)
-    # sigSaveMeasurement = QtCore.Signal(str, list, list)
+   
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
@@ -59,9 +53,9 @@ class PowerMeterGUI(GUIBase):
         """
 
         # CONNECTORS PART 2 ###################################################
-        self._pmlogic = self.pmlogic()
-        # self._pidlogic = self.pidlogic()
-        self._laclogic = self.laclogic()
+        # self._pmlogic = self.pmlogic()
+        self._pidlogic = self.pidlogic()
+        # self._laclogic = self.laclogic()
 
         self._mw = PowerMeterMainWindow()
         
@@ -89,29 +83,29 @@ class PowerMeterGUI(GUIBase):
         self._mw.posInput.valueChanged.connect(self.setPosInput)
 
         # Connect signals
-        # self._pidlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        # self._pidlogic.sigUpdatePMDisplay.connect(self.updatePlot)
+        self._pidlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        self._pidlogic.sigUpdatePMDisplay.connect(self.updatePlot)
 
-        self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
+        # self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        # self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
 
-        self._laclogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        self.sigStartPM.connect(self._laclogic.start_query_loop)
-        self.sigStartPM.connect(self._pmlogic.start_query_loop)
-        # self.sigStartPM.connect(self._pidlogic.startFunc)
+        # self._laclogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        # self.sigStartPM.connect(self._laclogic.start_query_loop)
+        # self.sigStartPM.connect(self._pmlogic.start_query_loop)
+        self.sigStartPM.connect(self._pidlogic.startFunc)
 
 
     def updateDisplay(self):
-        self._mw.powerOutput.setText(str(self._pmlogic.power))
-        self._mw.posOutput.setText(str(self._laclogic.position))
+        self._mw.powerOutput.setText(str(self._pidlogic.pv))
+        self._mw.posOutput.setText(str(self._pidlogic.cv))
 
 
     def updatePlot(self):
         """ The function that grabs the data and sends it to the plot.
         """
         self.timePass += 1
-        # self.powerOutputArr.append(self._pidlogic.pv)
-        self.powerOutputArr.append(self._pmlogic.power)
+        self.powerOutputArr.append(self._pidlogic.pv)
+        # self.powerOutputArr.append(self._pmlogic.power)
         
         self.curvearr[0].setData(
             y = np.asarray(self.powerOutputArr),
@@ -121,12 +115,13 @@ class PowerMeterGUI(GUIBase):
 
     def setPowerInput(self):
         self.powerInput = self._mw.powerInput.value()
-        # self._pidlogic.set_setpoint(self.powerInput)
+        self._pidlogic.set_setpoint(self.powerInput)
 
 
     def setPosInput(self):
-        self.posInput = self._mw.posInput.value()
-        self._laclogic.set_pos(self.posInput)
+        # self.posInput = self._mw.posInput.value()
+        # self._laclogic.set_pos(self.posInput)
+        return
 
 
 

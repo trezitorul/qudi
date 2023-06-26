@@ -64,6 +64,7 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
 
         @return int: error code (0:OK, -1:error)
         """
+        print(str(int(position / 100 * 1023)))
         self._LAC.set_position(int(position / 100 * 1023))
 
 
@@ -123,7 +124,7 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
 
         @return (tuple): The limits as (low limit, high limit)
         """
-        return (0, 100)
+        return (0, 99)
 
 
     def process_control_get_number_channels(self):

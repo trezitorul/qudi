@@ -108,7 +108,7 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
         """ Return the power read from the ThorlabsPM100 package """
         power =  c_double()
         self.tlPM.measPower(byref(power))
-        self.power = power.value
+        self.power = power.value *10**6
 
         return self.power
 
