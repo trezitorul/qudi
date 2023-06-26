@@ -53,7 +53,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
     sigNewValue = QtCore.Signal(float)
     sigUpdate = QtCore.Signal()
-    sigUpdatePMDisplay = QtCore.Signal()
+    sigUpdatePIDDisplay = QtCore.Signal(bool)
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
@@ -167,7 +167,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         self.timer.start(self.timestep)
         # self._process.set_power(self._control.get_pos())
-        self.sigUpdatePMDisplay.emit()
+        self.sigUpdatePIDDisplay.emit(True)
 
     def startLoop(self):
         """ Start the control loop. """
@@ -175,6 +175,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
     def stopLoop(self):
         """ Stop the control loop. """
+        self.timer.stop()
         self.countdown = -1
         self.enable = False
 

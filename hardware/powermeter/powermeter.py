@@ -58,33 +58,33 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
         self.deviceCount = c_uint32()
         self.tlPM.findRsrc(byref(self.deviceCount))
 
-        print("Number of found devices: " + str(self.deviceCount.value))
-        print("")
+        # print("Number of found devices: " + str(self.deviceCount.value))
+        # print("")
 
         self.resourceName = create_string_buffer(1024)
 
         for i in range(0, self.deviceCount.value):
             self.tlPM.getRsrcName(c_int(i), self.resourceName)
-            print("Resource name of device", i, ":", c_char_p(self.resourceName.raw).value)
-        print("")
+            # print("Resource name of device", i, ":", c_char_p(self.resourceName.raw).value)
+        # print("")
         self.tlPM.close()
         # time.sleep(5)
         i=0
         if i not in range(0, self.deviceCount.value):
             print(f"Device index {i} out of range [0,{self.deviceCount.value}]")
         else:
-            print(self.resourceName)
+            # print(self.resourceName)
             self.tlPM.getRsrcName(c_int(i), self.resourceName)
-            print(self.resourceName)
-            print(c_char_p(self.resourceName.raw).value)
+            # print(self.resourceName)
+            # print(c_char_p(self.resourceName.raw).value)
             # self.tlPM = TLPM()
             self.tlPM.open(self.resourceName, c_bool(IDQuery), c_bool(resetDevice))
 
             message = create_string_buffer(1024)
             self.tlPM.getCalibrationMsg(message)
-            print("Connected to device", i)
-            print("Last calibration date: ",c_char_p(message.raw).value)
-            print("")
+            # print("Connected to device", i)
+            # print("Last calibration date: ",c_char_p(message.raw).value)
+            # print("")
 
             time.sleep(1) #minimize?
         
