@@ -33,6 +33,7 @@ class DashboardGUI(GUIBase):
     pidlogic = Connector(interface='SoftPIDController')
     laclogic = Connector(interface='LACLogic')
     querylogic = Connector(interface='QueryLoopLogic')
+    aptlogic = Connector(interface='APTpiezoLogic')
 
     # SIGNALS ################################################################
     sigStartGUI = QtCore.Signal()
@@ -48,6 +49,7 @@ class DashboardGUI(GUIBase):
         self._pidlogic = self.pidlogic()
         self._laclogic = self.laclogic()
         self._querylogic = self.querylogic()
+        self._aptlogic = self.aptlogic()
 
         self._mw = DashboardMainWindow()
         
@@ -63,11 +65,21 @@ class DashboardGUI(GUIBase):
         self.curvearr.append(self.plot1.plot())
         self.curvearr[-1].setPen(palette.c1)
 
+        # Set default parameters
         self.timePass = 0
         self.powerOutputArr = []
-        # Set default parameters
+        self._mw.StepSize.setValue(10)
+        self.stepSize = 10
+        self.position = [0, 0, 0]
 
         # Connect buttons to functions
+        self._mw.StepSize.valueChanged.connect(self.stepChanged)
+        self._mw.upButton.clicked.connect(lambda: self.move(1,1))
+        self._mw.downButton.clicked.connect(lambda: self.move(1,-1))
+        self._mw.leftButton.clicked.connect(lambda: self.move(0,-1))
+        self._mw.rightButton.clicked.connect(lambda: self.move(0,1))
+        self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
+        self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
         self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
         self._mw.stopButton.clicked.connect(self.emitStopPID)
         self._mw.manualButton.clicked.connect(self.startManual)
@@ -83,6 +95,7 @@ class DashboardGUI(GUIBase):
 
         self._querylogic.sigUpdateVariable.connect(self.updateDisplay)
         self._querylogic.sigUpdateVariable.connect(self.updatePlot)
+        self._aptlogic.sigUpdateDisplay.connect(self.updatePiezoDisplay) #maybe change name in aptlogic too
 
         # self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         # self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
@@ -179,3 +192,23 @@ class DashboardGUI(GUIBase):
         self._mw.stopButton.setEnabled(False)
 
         self._mw.posInput.valueChanged.connect(self.setPosInput)
+
+    def move(self, axis, direction):
+        """Move piezo
+
+        Args:
+            axis (int): 0->x, 1->y, 2->z
+            direction (int, optional): Step direction. Defaults to 1.
+        """
+
+        position = self.position
+        position[axis] = self.position[axis] + self.stepSize * direction
+
+    def stepChanged(self):
+        self.stepSize = self._mw.StepSize.value()
+
+    def updatePiezoDisplay(self):
+        self.position = self._aptlogic.position
+        self._mw.xVal.setText(str(self.position[0]))
+        self._mw.yVal.setText(str(self.position[1]))
+        self._mw.zVal.setText(str(self.position[2]))
