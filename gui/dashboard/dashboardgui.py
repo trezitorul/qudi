@@ -69,6 +69,9 @@ class DashboardGUI(GUIBase):
         self.timePass = 0
         self.powerOutputArr = []
         self._mw.StepSize.setValue(10)
+        self._mw.k_P.setValue(self._pidlogic.kP)
+        self._mw.k_I.setValue(self._pidlogic.kI)
+        self._mw.k_D.setValue(self._pidlogic.kD)
         self.stepSize = 10
         self.position = [0, 0, 0]
 
@@ -80,10 +83,14 @@ class DashboardGUI(GUIBase):
         self._mw.rightButton.clicked.connect(lambda: self.move(0,1))
         self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
         self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
+
         self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
         self._mw.stopButton.clicked.connect(self.emitStopPID)
         self._mw.manualButton.clicked.connect(self.startManual)
         self._mw.PIDbutton.clicked.connect(self.startPID)
+        self._mw.k_P.valueChanged.connect(self.change_kP)
+        self._mw.k_I.valueChanged.connect(self.change_kI)
+        self._mw.k_D.valueChanged.connect(self.change_kD)
 
         # Connect spin box
         self._mw.powerInput.valueChanged.connect(self.setPowerInput)
@@ -212,3 +219,15 @@ class DashboardGUI(GUIBase):
         self._mw.xVal.setText(str(self.position[0]))
         self._mw.yVal.setText(str(self.position[1]))
         self._mw.zVal.setText(str(self.position[2]))
+    
+    def change_kP(self):
+        kp = self._mw.k_P.value()
+        self._pidlogic.set_kp(kp)
+
+    def change_kI(self):
+        ki = self._mw.k_I.value()
+        self._pidlogic.set_ki(ki)
+
+    def change_kD(self):
+        kd = self._mw.k_D.value()
+        self._pidlogic.set_kd(kd)
