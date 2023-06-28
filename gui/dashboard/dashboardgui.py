@@ -34,6 +34,7 @@ class DashboardGUI(GUIBase):
     laclogic = Connector(interface='LACLogic')
     querylogic = Connector(interface='QueryLoopLogic')
     aptlogic = Connector(interface='APTpiezoLogic')
+    flipperlogic = Connector(interface='FlipperMirrorLogic')
 
     # SIGNALS ################################################################
     sigStartGUI = QtCore.Signal()
@@ -50,6 +51,7 @@ class DashboardGUI(GUIBase):
         self._laclogic = self.laclogic()
         self._querylogic = self.querylogic()
         self._aptlogic = self.aptlogic()
+        self._flipperlogic = self.flipperlogic()
 
         self._mw = DashboardMainWindow()
         
@@ -88,13 +90,20 @@ class DashboardGUI(GUIBase):
         self._mw.stopButton.clicked.connect(self.emitStopPID)
         self._mw.manualButton.clicked.connect(self.startManual)
         self._mw.PIDbutton.clicked.connect(self.startPID)
+
+        self._mw.onButton_1.clicked.connect(lambda: self.flipOn(1))
+        self._mw.onButton_2.clicked.connect(lambda: self.flipOn(2))
+        self._mw.offButton_1.clicked.connect(lambda: self.flipOff(1))
+        self._mw.offButton_2.clicked.connect(lambda: self.flipOff(2))
+
+
+        # Connect spin boxes
+        self._mw.powerInput.valueChanged.connect(self.setPowerInput)
+        self._mw.posInput.valueChanged.connect(self.setPosInput)
+
         self._mw.k_P.valueChanged.connect(self.change_kP)
         self._mw.k_I.valueChanged.connect(self.change_kI)
         self._mw.k_D.valueChanged.connect(self.change_kD)
-
-        # Connect spin box
-        self._mw.powerInput.valueChanged.connect(self.setPowerInput)
-        self._mw.posInput.valueChanged.connect(self.setPosInput)
 
         # Connect signals
         # self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
@@ -211,6 +220,8 @@ class DashboardGUI(GUIBase):
         position = self.position
         position[axis] = self.position[axis] + self.stepSize * direction
 
+        self._aptlogic.setPosition(position)
+
     def stepChanged(self):
         self.stepSize = self._mw.StepSize.value()
 
@@ -231,3 +242,9 @@ class DashboardGUI(GUIBase):
     def change_kD(self):
         kd = self._mw.k_D.value()
         self._pidlogic.set_kd(kd)
+
+    def flipOn(self, num):
+        self._flipperlogic.set_mode('on', num)
+
+    def flipOff(self, num):
+        self._flipperlogic.set_mode('off', num)

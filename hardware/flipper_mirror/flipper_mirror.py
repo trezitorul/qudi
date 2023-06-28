@@ -27,28 +27,46 @@ import os
 import time
 import logging
 import sys
-import clr
+# import clr
 import matplotlib.pyplot as plt
 # from scipy import signal
 import numpy as np
 from ctypes import *
 # from System import Decimal
 
-sys.path.append(r"C:\\Program Files\\Thorlabs\\Kinesis")
-clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.DeviceManagerCLI.dll")
-clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.GenericMotorCLI.dll")
-clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.FilterFlipperCLI.dll")
-clr.AddReference("System.Collections")
-clr.AddReference("System.Linq")
+# sys.path.append(r"C:\\Program Files\\Thorlabs\\Kinesis")
+# clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.DeviceManagerCLI.dll")
+# clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.GenericMotorCLI.dll")
+# clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.FilterFlipperCLI.dll")
+# clr.AddReference("System.Collections")
+# clr.AddReference("System.Linq")
 
-from Thorlabs.MotionControl.DeviceManagerCLI import DeviceManagerCLI 
-from Thorlabs.MotionControl.DeviceManagerCLI import DeviceNotReadyException 
-from Thorlabs.MotionControl.FilterFlipperCLI import FilterFlipper
+# from Thorlabs.MotionControl.DeviceManagerCLI import DeviceManagerCLI 
+# from Thorlabs.MotionControl.DeviceManagerCLI import DeviceNotReadyException 
+# from Thorlabs.MotionControl.FilterFlipperCLI import FilterFlipper
 
 class FlipperMirror(Base):
 
     # def __init__(self,deviceID):
     #     self.device = self.SetupDevice(deviceID)
+
+    windll.kernel32.SetDllDirectoryW("c:\Program Files\Thorlabs\Kinesis")
+
+    # DeviceManagerCLI = "C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.DeviceManagerCLI.dll"
+    # GenericMotorCLI = "C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.GenericMotorCLI.dll"
+    # FilterFlipper = "C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.FilterFlipperCLI.dll"
+
+    # os.environ["PATH"] = DeviceManagerCLI + ";" + os.environ["PATH"]
+    # os.environ["PATH"] = GenericMotorCLI + ";" + os.environ["PATH"]
+    # os.environ["PATH"] = FilterFlipper + ";" + os.environ["PATH"]
+
+    # DeviceManagerCLIObj = CDLL("Thorlabs.MotionControl.DeviceManagerCLI.dll")
+    # GenericMotorCLI = CDLL("Thorlabs.MotionControl.GenericMotorCLI.dll")
+    FilterFlipperCLI = CDLL("Thorlabs.MotionControl.FilterFlipperCLI.dll")
+
+    # DeviceManagerCLI = DeviceManagerCLIObj.DeviceManagerCLI
+    FilterFlipper = FilterFlipperCLI.FilterFlipper
+
 
     def on_activate(self):
         deviceID = "37005466"
@@ -65,8 +83,10 @@ class FlipperMirror(Base):
         '''
         Create mirrors
         '''
-        DeviceManagerCLI.BuildDeviceList()
-        self.device = FilterFlipper.CreateFilterFlipper(str(deviceID))
+        # self.DeviceManagerCLI.BuildDeviceList()
+
+        self.device = self.FilterFlipper.CreateFilterFlipper(str(deviceID))
+
         self.device.Connect(deviceID)
         self.device.StartPolling(1)
         time.sleep(0.25)

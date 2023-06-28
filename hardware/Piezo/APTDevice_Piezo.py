@@ -337,9 +337,6 @@ class APTDevice_Piezo(APTDevice):
         position = self.info[channel]["position"]
         maxTravel = self.info[channel]["maxTravel"]
 
-        print("Position: ")
-        print(position)
-
         return position/32767*maxTravel
 
 

@@ -45,7 +45,7 @@ class APTPiezo(Base, APTpiezoInterface):
     :param status_updates: Set to ``"auto"``, ``"polled"`` or ``"none"``.
     """
     _deviceID = ConfigOption(name='deviceID', missing='warn')
-    _serial_port = ConfigOption(name='serial_port', missing='warn')
+    _serial_port = ConfigOption(name='serial_port', missing='warn', default=None)
     _is_second_piezo = ConfigOption(name='is_second_piezo', default=False)
     
 

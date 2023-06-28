@@ -32,7 +32,8 @@ class FlipperMirrorLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
-    flipper = Connector(interface='FlipperMirror')
+    flipper1 = Connector(interface='FlipperMirror')
+    # flipper2 = Connector(interface='FlipperMirror')
     
     # signals
     sigUpdatePMDisplay = QtCore.Signal()
@@ -42,7 +43,10 @@ class FlipperMirrorLogic(GenericLogic):
     def on_activate(self):
         """ Prepare logic module for work.
         """
-        self._flipper = self.flipper()
+        self._flipper1 = self.flipper1()
+        # self._flipper2 = self.flipper2()
+
+        self.home_mirrors()
 
 
     def on_deactivate(self):
@@ -51,11 +55,16 @@ class FlipperMirrorLogic(GenericLogic):
         pass
 
 
-    def set_mode(self, mode):
-        self.flipper.SetMode(mode)
+    def set_mode(self, mode, num):
+        if num == 1:
+            self._flipper1.SetMode(mode)
+        else:
+            # self._flipper2.SetMode(mode)
+            pass
 
 
-    def home_mirro(self):
-        self.flipper.HomeMirror()
+    def home_mirrors(self):
+        self._flipper1.HomeMirror()
+        # self._flipper2.HomeMirror()
         
 
