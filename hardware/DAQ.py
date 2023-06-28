@@ -27,14 +27,21 @@ class DAQ(Base):
     def on_activate(self):
         """ Initialisation performed during activation of the module.
          """
-        self.setZero()
+        self.board_num = 0
+        self.mode=self._mode
+        if self._range == "BIP10VOLTS":
+            self.range = (1, -10., 10.)
+
+        self.setMode(self.mode)
+        # self.setZero()
 
 
     def on_deactivate(self):
         """
         Deinitialisation performed during deactivation of the module.
         """
-        self.setZero()
+        # self.setZero()
+        pass
 
 
     def setMode(self,mode):
@@ -122,79 +129,21 @@ class DAQ(Base):
         return
 
 
-    def getCounts(self,dt):
+    def getCounts(self,dt, counterchannel):
         '''
         Implementing electrical pulse countings on the Daq cards
         '''
         daq_dev_info = DaqDeviceInfo(self.board_num)
         ctr_info = daq_dev_info.get_ctr_info()
-        if self.counterchannel != ctr_info.chan_info[0].channel_num:
+        if counterchannel != ctr_info.chan_info[counterchannel].channel_num:
             print("wrong channel")
             return "null"
         else:
-            ul.c_clear(self.board_num, self.counterchannel)
+            print("counting")
+            ul.c_clear(self.board_num, counterchannel)
             t=0
             while t <= dt:
                 tstart= time.perf_counter()
-                counts = ul.c_in_32(self.board_num, self.counterchannel)
+                counts = ul.c_in_32(self.board_num, counterchannel)
                 t = (time.perf_counter() - tstart) + t
             return counts
-
-# if __name__ == "__main__":
-#     '''
-#     test motor with read and write operations
-#     '''
-#     galvo = GVS012Galvo(ULRange.BIP10VOLTS,"single_ended")
-#     vArray = []
-#     outVal=0
-#     s=1
-#     ms=0.001
-#     hz=1
-#     f=1*hz 
-#     p=1/f
-#     ns=1e-9*s
-#     tArray=[]
-#     channel_X_high = [0,0] #[out channel, in channel]
-#     channel_X_low = [1,1]
-#     channel_Y_high = [2,2]
-#     channel_Y_low = [3,3]
-#     t = 0
-#     vArrayX =[]
-#     vArrayY = []
-#     vArrayX1 =[]
-#     vArrayY1 = []
-#     cArrayX=[]
-#     cArrayY=[]
-#     cArrayX1=[]
-#     cArrayY1=[]
-#     A=5# Volts
-#     try:
-#         device_info = DaqDeviceInfo(galvo.board_num)
-#         print("unique_id", device_info.product_name)
-#         print(galvo.mode)
-#         galvo.setMode("differential")
-#         print(galvo.mode)
-#         for i in range(int(1e3)):
-#             tstart=time.perf_counter()
-#             tArray.append(t)
-#             voltageX = A * np.sin(((2*np.pi)/p)*t)
-#             voltageY = A * np.sin(((2*np.pi)/p)*t + np.pi/2)
-#             galvo.setDiffVoltage(channel_Y_high[0],channel_Y_low[0], voltageY)
-#             galvo.setDiffVoltage(channel_X_high[0],channel_X_low[0], voltageX)
-#             Voltage_outY = galvo.getDiffVoltage(channel_Y_high[1],channel_Y_low[1])
-#             Voltage_outX = galvo.getDiffVoltage(channel_X_high[1],channel_X_low[1])
-#             cArrayX.append(voltageX)
-#             cArrayY.append(voltageY)
-#             vArrayX.append(Voltage_outX)
-#             vArrayY.append(Voltage_outY)
-#             t = (time.perf_counter() - tstart) + t
-#         plt.plot(tArray, vArrayX, marker='+',c ='b', label="X")
-#         plt.plot(tArray, vArrayY, marker ='+',c ='r', label="Y")
-#         plt.plot(tArray, cArrayX,c ='b')
-#         plt.plot(tArray, cArrayY,c ='r')
-#         plt.legend()
-#         plt.show()
-#         galvo.setZero()
-#     except ULError as e:
-#         print("A UL error occurred. Code: " + str(e.errorcode)
-#             + " Message: " + e.message)

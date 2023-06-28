@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1171</width>
-    <height>671</height>
+    <height>628</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,7 +50,7 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_12">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -140,7 +140,7 @@
       </widget>
      </widget>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <layout class="QGridLayout" name="gridLayout">
       <item row="4" column="1">
        <widget class="QLabel" name="xVal_5">
@@ -317,7 +317,7 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QHBoxLayout" name="horizontalLayout_10">
        <item>
         <widget class="QPushButton" name="PIDbutton">
@@ -346,7 +346,7 @@
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <layout class="QVBoxLayout" name="verticalLayout_7">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -602,7 +602,7 @@
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <layout class="QVBoxLayout" name="verticalLayout_10">
       <item>
        <widget class="QLabel" name="label_7">
@@ -642,7 +642,7 @@
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <layout class="QVBoxLayout" name="verticalLayout_11">
       <item>
        <widget class="QDoubleSpinBox" name="k_P">
@@ -675,7 +675,7 @@
     </widget>
    </widget>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>11</x>
@@ -792,6 +792,79 @@
      </spacer>
     </item>
    </layout>
+  </widget>
+  <widget class="QSplitter" name="splitter_9">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>10</y>
+     <width>311</width>
+     <height>161</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
+   <widget class="QLabel" name="label_11">
+    <property name="font">
+     <font>
+      <pointsize>18</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>DAQ Counts</string>
+    </property>
+   </widget>
+   <widget class="QSplitter" name="splitter_7">
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <widget class="QLabel" name="label_12">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Channel 1</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_13">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Channel 2</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QSplitter" name="splitter_8">
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <widget class="QLabel" name="daq_channel1">
+     <property name="font">
+      <font>
+       <pointsize>24</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="daq_channel2">
+     <property name="font">
+      <font>
+       <pointsize>24</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
  </widget>
  <customwidgets>

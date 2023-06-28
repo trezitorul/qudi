@@ -34,7 +34,9 @@ class DashboardGUI(GUIBase):
     laclogic = Connector(interface='LACLogic')
     querylogic = Connector(interface='QueryLoopLogic')
     aptlogic = Connector(interface='APTpiezoLogic')
-    flipperlogic = Connector(interface='FlipperMirrorLogic')
+    # flipperlogic = Connector(interface='FlipperMirrorLogic')
+    daqcounter1 = Connector(interface='DaqCounter')
+    daqcounter2 = Connector(interface='DaqCounter')
 
     # SIGNALS ################################################################
     sigStartGUI = QtCore.Signal()
@@ -51,7 +53,9 @@ class DashboardGUI(GUIBase):
         self._laclogic = self.laclogic()
         self._querylogic = self.querylogic()
         self._aptlogic = self.aptlogic()
-        self._flipperlogic = self.flipperlogic()
+        # self._flipperlogic = self.flipperlogic()
+        self._daqcounter1 = self.daqcounter1()
+        self._daqcounter2 = self.daqcounter2()
 
         self._mw = DashboardMainWindow()
         
@@ -76,6 +80,8 @@ class DashboardGUI(GUIBase):
         self._mw.k_D.setValue(self._pidlogic.kD)
         self.stepSize = 10
         self.position = [0, 0, 0]
+        self.count1 = 0
+        self.count2 = 0
 
         # Connect buttons to functions
         self._mw.StepSize.valueChanged.connect(self.stepChanged)
@@ -113,11 +119,14 @@ class DashboardGUI(GUIBase):
         self._querylogic.sigUpdateVariable.connect(self.updatePlot)
         self._aptlogic.sigUpdateDisplay.connect(self.updatePiezoDisplay) #maybe change name in aptlogic too
 
+        self._aptlogic.sigUpdateDisplay.connect(self.count)
+
         # self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         # self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
 
         # self._laclogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         # self.sigStartPM.connect(self._pidlogic.startPID)
+
 
 
     def on_deactivate(self):
@@ -244,7 +253,15 @@ class DashboardGUI(GUIBase):
         self._pidlogic.set_kd(kd)
 
     def flipOn(self, num):
-        self._flipperlogic.set_mode('on', num)
+        # self._flipperlogic.set_mode('on', num)
+        pass
 
     def flipOff(self, num):
-        self._flipperlogic.set_mode('off', num)
+        # self._flipperlogic.set_mode('off', num)
+        pass
+
+    def count(self):
+        self.count1 = self._daqcounter1.getCounts(0.001)
+        self.count2 = self._daqcounter2.getCounts(0.001)
+        self._mw.daq_channel1.setText(str(self.count1))
+        self._mw.daq_channel2.setText(str(self.count2))
