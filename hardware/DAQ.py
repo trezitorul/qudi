@@ -133,17 +133,17 @@ class DAQ(Base):
         '''
         Implementing electrical pulse countings on the Daq cards
         '''
-        daq_dev_info = DaqDeviceInfo(self.board_num)
-        ctr_info = daq_dev_info.get_ctr_info()
-        if counterchannel != ctr_info.chan_info[counterchannel].channel_num:
-            print("wrong channel")
-            return "null"
-        else:
-            print("counting")
-            ul.c_clear(self.board_num, counterchannel)
-            t=0
-            while t <= dt:
-                tstart= time.perf_counter()
-                counts = ul.c_in_32(self.board_num, counterchannel)
-                t = (time.perf_counter() - tstart) + t
-            return counts
+        # daq_dev_info = DaqDeviceInfo(self.board_num)
+        # ctr_info = daq_dev_info.get_ctr_info()
+        # if counterchannel != ctr_info.chan_info[counterchannel].channel_num:
+        #     print("wrong channel")
+        #     return "null"
+        # else:
+        print("counting")
+        ul.c_clear(self.board_num, counterchannel)
+        t=0
+        while t <= dt:
+            tstart= time.perf_counter()
+            counts = ul.c_in_32(self.board_num, counterchannel)
+            t = (time.perf_counter() - tstart) + t
+        return counts
