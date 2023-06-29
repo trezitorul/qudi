@@ -112,8 +112,8 @@ class DashboardGUI(GUIBase):
         self._mw.k_D.valueChanged.connect(self.change_kD)
 
         # Connect signals
-        # self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
-        # self._pidlogic.sigUpdatePIDDisplay.connect(self.updatePlot)
+        self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
+        self._pidlogic.sigUpdatePIDDisplay.connect(self.updatePlot)
 
         self._querylogic.sigUpdateVariable.connect(self.updateDisplay)
         self._querylogic.sigUpdateVariable.connect(self.updatePlot)
@@ -184,14 +184,9 @@ class DashboardGUI(GUIBase):
     def startPID(self):
         # self._querylogic.stop_query_loop()
         self._querylogic.sigStopQuery.emit()
-        # time.sleep(3)
         # self.sigStartPM.emit()
         self._mw.startButton.setEnabled(True)
         self._mw.stopButton.setEnabled(True)
-        # self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
-        # self._mw.stopButton.clicked.connect(self.emitStopPID)
-        self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
-        self._pidlogic.sigUpdatePIDDisplay.connect(self.updatePlot)
         # self._pidlogic.startFunc()
         # self._laclogic.stop_query_loop()
         # self._pmlogic.stop_query_loop()
@@ -215,8 +210,6 @@ class DashboardGUI(GUIBase):
         # Disable buttons
         self._mw.startButton.setEnabled(False)
         self._mw.stopButton.setEnabled(False)
-
-        self._mw.posInput.valueChanged.connect(self.setPosInput)
 
     def move(self, axis, direction):
         """Move piezo

@@ -85,24 +85,8 @@ class APTPiezo(Base, APTpiezoInterface):
         :param bay: Index (0-based) of controller bay to send the command.
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
-
-        # if (position == None):
-        #     raise ValueError("MISSING INPUT FOR POSITION")
-
-        # if (position < 0):
-        #     raise ValueError("POSITION MUST BE POSITIVE")
-
-        # currMode = self.piezo.info[channel]["mode"]
-
-        # if (currMode != 0x02 and currMode != 0x04):
-        #     raise ValueError("MUST BE IN CLOSED LOOP MODE")
         
         self.piezo.set_position(position=position, bay=bay, channel=channel)
-        
-        # max = self.piezo.info[channel]["maxTravel"]
-        # positionOut=int((32767.0*position/max) * 10)
-
-        # self.piezo.info[channel]["position"] = positionOut
 
 
     def get_position(self , bay=0, channel=0):
@@ -114,13 +98,5 @@ class APTPiezo(Base, APTpiezoInterface):
         :param bay: Index (0-based) of controller bay to send the command.
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
-
-        # currMode = self.piezo.info[channel]["mode"]
-
-        # if (currMode != 0x02 and currMode != 0x04):
-        #     raise ValueError("MUST BE IN CLOSED LOOP MODE")
-
-        # position = self.piezo.info[channel]["position"]
-        # maxTravel = self.piezo.info[channel]["maxTravel"]
 
         return round(self.piezo.get_position(bay=bay, channel=channel), 2)
