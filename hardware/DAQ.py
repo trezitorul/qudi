@@ -30,10 +30,14 @@ class DAQ(Base):
         self.board_num = 0
         self.mode=self._mode
         if self._range == "BIP10VOLTS":
-            self.range = (1, -10., 10.)
+            self.range=ULRange.BIP10VOLTS
+
+        channel_X_high = [0,0] #[out channel, in channel]
+        channel_X_low = [1,1]
+        channel_Y_high = [2,2]
+        channel_Y_low = [3,3]
 
         self.setMode(self.mode)
-        # self.setZero()
 
 
     def on_deactivate(self):
@@ -41,7 +45,6 @@ class DAQ(Base):
         Deinitialisation performed during deactivation of the module.
         """
         self.setZero()
-        pass
 
 
     def setMode(self,mode):

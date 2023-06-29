@@ -890,7 +890,7 @@
      <x>180</x>
      <y>680</y>
      <width>166</width>
-     <height>161</height>
+     <height>171</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -998,8 +998,8 @@
     <rect>
      <x>10</x>
      <y>680</y>
-     <width>72</width>
-     <height>133</height>
+     <width>131</width>
+     <height>121</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_11">

@@ -77,15 +77,16 @@ class DashboardGUI(GUIBase):
         self.timePass = 0
         self.powerOutputArr = []
         self._mw.StepSize.setValue(10)
-        self._mw.GalvoStepSize.setValue(10)
         self._mw.k_P.setValue(self._pidlogic.kP)
         self._mw.k_I.setValue(self._pidlogic.kI)
         self._mw.k_D.setValue(self._pidlogic.kD)
         self.stepSize = 10
         self.position = [0, 0, 0]
-        self.galvoPosition = [0, 0]
         self.count1 = 0
         self.count2 = 0
+
+        self._mw.GalvoStepSize.setValue(10)
+        self.galvoPosition = [0, 0]
         self.galvoStepSize = 10
 
         # Connect buttons to functions
@@ -263,8 +264,8 @@ class DashboardGUI(GUIBase):
 
     def updateGalvoDisplay(self):
         self.galvoPosition = self._galvologic.getPosition()
-        self._mw.galvoXVal.setText(str(self.galvoPosition[0]))
-        self._mw.galvoYVal.setText(str(self.galvoPosition[1]))
+        self._mw.galvoXVal.setText(str(round(self.galvoPosition[0])))
+        self._mw.galvoYVal.setText(str(round(self.galvoPosition[1])))
     
     def change_kP(self):
         kp = self._mw.k_P.value()

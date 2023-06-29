@@ -32,11 +32,6 @@ class GalvoLogic(GenericLogic):
         self.phiLow=3
         self.VToA=10 #Volts per Optical Scan Angle (1/2 * 0.5 V per Mechanical Angle, Optical Scan Angle is 2X Mechanical Scan Angle)
         self.projectionDistance=10.63*self.um #1/tan(31) used for development only, corresponds to max displacement of the X axis at theta=31 degrees. Units can be chosen arbitrarily for now as um=1
- 
-        self.channel_X_high = [0,0] #[out channel, in channel]
-        self.channel_X_low = [1,1]
-        self.channel_Y_high = [2,2]
-        self.channel_Y_low = [3,3]
 
 
     def on_deactivate(self):
