@@ -29,11 +29,11 @@ from qtpy import QtCore
 
 
 class FlipperMirrorLogic(GenericLogic):
-    """ Logic module agreggating multiple hardware switches.
+    """ Logic module for 2 flipper mirrors.
     """
 
     flipper1 = Connector(interface='FlipperMirror')
-    # flipper2 = Connector(interface='FlipperMirror')
+    flipper2 = Connector(interface='FlipperMirror')
     
     # signals
     sigUpdatePMDisplay = QtCore.Signal()
@@ -44,7 +44,7 @@ class FlipperMirrorLogic(GenericLogic):
         """ Prepare logic module for work.
         """
         self._flipper1 = self.flipper1()
-        # self._flipper2 = self.flipper2()
+        self._flipper2 = self.flipper2()
 
         self.home_mirrors()
 
@@ -59,12 +59,12 @@ class FlipperMirrorLogic(GenericLogic):
         if num == 1:
             self._flipper1.SetMode(mode)
         else:
-            # self._flipper2.SetMode(mode)
+            self._flipper2.SetMode(mode)
             pass
 
 
     def home_mirrors(self):
         self._flipper1.HomeMirror()
-        # self._flipper2.HomeMirror()
+        self._flipper2.HomeMirror()
         
 

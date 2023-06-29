@@ -30,6 +30,7 @@ import sys
 import clr
 # import matplotlib.pyplot as plt
 # from scipy import signal
+from core.configoption import ConfigOption
 import numpy as np
 from ctypes import *
 # from System import Decimal
@@ -46,31 +47,14 @@ from Thorlabs.MotionControl.DeviceManagerCLI import DeviceNotReadyException
 from Thorlabs.MotionControl.FilterFlipperCLI import FilterFlipper
 
 class FlipperMirror(Base):
+    """ Hardware module for flipper mirror.
+    """
 
-    # def __init__(self,deviceID):
-    #     self.device = self.SetupDevice(deviceID)
-
-    # windll.kernel32.SetDllDirectoryW("c:\Program Files\Thorlabs\Kinesis")
-
-    # DeviceManagerCLI = "C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.DeviceManagerCLI.dll"
-    # GenericMotorCLI = "C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.GenericMotorCLI.dll"
-    # FilterFlipper = "C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.FilterFlipperCLI.dll"
-
-    # os.environ["PATH"] = DeviceManagerCLI + ";" + os.environ["PATH"]
-    # os.environ["PATH"] = GenericMotorCLI + ";" + os.environ["PATH"]
-    # os.environ["PATH"] = FilterFlipper + ";" + os.environ["PATH"]
-
-    # DeviceManagerCLIObj = CDLL("Thorlabs.MotionControl.DeviceManagerCLI.dll")
-    # GenericMotorCLI = CDLL("Thorlabs.MotionControl.GenericMotorCLI.dll")
-    # FilterFlipperCLI = CDLL("Thorlabs.MotionControl.FilterFlipperCLI.dll")
-
-    # DeviceManagerCLI = DeviceManagerCLIObj.DeviceManagerCLI
-    # FilterFlipper = FilterFlipperCLI.FilterFlipper
-
+    _deviceID = ConfigOption(name='deviceID', missing='error')
 
     def on_activate(self):
-        deviceID = "37005466"
-        self._FlipperMirror = self.SetupDevice(deviceID)
+        self.deviceID = self._deviceID
+        self._FlipperMirror = self.SetupDevice(self.deviceID)
 
         # Reser the flipper
         self.HomeMirror()

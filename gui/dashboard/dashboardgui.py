@@ -257,8 +257,8 @@ class DashboardGUI(GUIBase):
         # pass
 
     def flipOff(self, num):
-        # self._flipperlogic.set_mode('off', num)
-        pass
+        self._flipperlogic.set_mode('off', num)
+        # pass
 
     def count(self):
         self.count1 = self._daqcounter1.getCounts(0.001)
