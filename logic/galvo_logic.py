@@ -14,9 +14,6 @@ class GalvoLogic(GenericLogic):
     """
 
     daq = Connector(interface='DAQ')
-    
-    # signals
-    sigUpdateDisplay = QtCore.Signal()
 
     # Connect signals
 
@@ -46,6 +43,24 @@ class GalvoLogic(GenericLogic):
         """ Deactivate modeule.
         """
         pass
+
+    def setPosition(self, position):
+
+        self.setX(position[0])
+        self.setY(position[1])
+
+    def getPosition(self):
+        """
+        Get position of the piezo as an integer in the range from 0 to 32767, correspond 
+        to 0-100% of piezo extension aka maxTravel.
+        Units: microns
+
+        :param bay: Index (0-based) of controller bay to send the command.
+        :param channel: Index (0-based) of controller bay channel to send the command.
+        """
+
+        position = [self.getX(), self.getY()]
+        return position
     
     def setMode(self,mode):
         '''

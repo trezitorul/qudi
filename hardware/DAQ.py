@@ -40,7 +40,7 @@ class DAQ(Base):
         """
         Deinitialisation performed during deactivation of the module.
         """
-        # self.setZero()
+        self.setZero()
         pass
 
 

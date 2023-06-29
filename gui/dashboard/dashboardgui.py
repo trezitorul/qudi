@@ -37,6 +37,7 @@ class DashboardGUI(GUIBase):
     flipperlogic = Connector(interface='FlipperMirrorLogic')
     daqcounter1 = Connector(interface='DaqCounter')
     daqcounter2 = Connector(interface='DaqCounter')
+    galvologic = Connector(interface='GalvoLogic')
 
     # SIGNALS ################################################################
     sigStartGUI = QtCore.Signal()
@@ -56,6 +57,7 @@ class DashboardGUI(GUIBase):
         self._flipperlogic = self.flipperlogic()
         self._daqcounter1 = self.daqcounter1()
         self._daqcounter2 = self.daqcounter2()
+        self._galvologic = self.galvologic()
 
         self._mw = DashboardMainWindow()
         
@@ -75,22 +77,29 @@ class DashboardGUI(GUIBase):
         self.timePass = 0
         self.powerOutputArr = []
         self._mw.StepSize.setValue(10)
+        self._mw.GalvoStepSize.setValue(10)
         self._mw.k_P.setValue(self._pidlogic.kP)
         self._mw.k_I.setValue(self._pidlogic.kI)
         self._mw.k_D.setValue(self._pidlogic.kD)
         self.stepSize = 10
         self.position = [0, 0, 0]
+        self.galvoPosition = [0, 0]
         self.count1 = 0
         self.count2 = 0
+        self.galvoStepSize = 10
 
         # Connect buttons to functions
-        self._mw.StepSize.valueChanged.connect(self.stepChanged)
         self._mw.upButton.clicked.connect(lambda: self.move(1,1))
         self._mw.downButton.clicked.connect(lambda: self.move(1,-1))
         self._mw.leftButton.clicked.connect(lambda: self.move(0,-1))
         self._mw.rightButton.clicked.connect(lambda: self.move(0,1))
         self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
         self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
+
+        self._mw.galvoUpButton.clicked.connect(lambda: self.move(1,1))
+        self._mw.galvoDownButton.clicked.connect(lambda: self.move(1,-1))
+        self._mw.galvoLeftButton.clicked.connect(lambda: self.move(0,-1))
+        self._mw.galvoDownButton.clicked.connect(lambda: self.move(0,1))
 
         self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
         self._mw.stopButton.clicked.connect(self.emitStopPID)
@@ -104,6 +113,8 @@ class DashboardGUI(GUIBase):
 
 
         # Connect spin boxes
+        self._mw.StepSize.valueChanged.connect(self.stepChanged)
+        self._mw.GalvoStepSize.valueChanged.connect(self.galvoStepChanged)
         self._mw.powerInput.valueChanged.connect(self.setPowerInput)
         self._mw.posInput.valueChanged.connect(self.setPosInput)
 
@@ -117,9 +128,10 @@ class DashboardGUI(GUIBase):
 
         self._querylogic.sigUpdateVariable.connect(self.updateDisplay)
         self._querylogic.sigUpdateVariable.connect(self.updatePlot)
-        self._aptlogic.sigUpdateDisplay.connect(self.updatePiezoDisplay) #maybe change name in aptlogic too
+        self._aptlogic.sigUpdateDisplay.connect(self.updatePiezoDisplay)
 
         self._aptlogic.sigUpdateDisplay.connect(self.count)
+        self._aptlogic.sigUpdateDisplay.connect(self.updateGalvoDisplay)
 
         # self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         # self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
@@ -224,14 +236,35 @@ class DashboardGUI(GUIBase):
 
         self._aptlogic.setPosition(position)
 
+    def moveGalvo(self, axis, direction):
+        """Move galvo
+
+        Args:
+            axis (int): 0->x, 1->y
+            direction (int, optional): Step direction. Defaults to 1.
+        """
+
+        galvoPosition = self.galvoPosition
+        galvoPosition[axis] = self.galvoPosition[axis] + self.galvoStepSize * direction
+
+        self._galvologic.setPosition(galvoPosition)
+
     def stepChanged(self):
         self.stepSize = self._mw.StepSize.value()
+
+    def galvoStepChanged(self):
+        self.galvoStepSize = self._mw.GalvoStepSize.value()
 
     def updatePiezoDisplay(self):
         self.position = self._aptlogic.position
         self._mw.xVal.setText(str(self.position[0]))
         self._mw.yVal.setText(str(self.position[1]))
         self._mw.zVal.setText(str(self.position[2]))
+
+    def updateGalvoDisplay(self):
+        self.galvoPosition = self._galvologic.getPosition()
+        self._mw.galvoXVal.setText(str(self.galvoPosition[0]))
+        self._mw.galvoYVal.setText(str(self.galvoPosition[1]))
     
     def change_kP(self):
         kp = self._mw.k_P.value()
