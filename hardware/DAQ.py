@@ -139,7 +139,6 @@ class DAQ(Base):
         #     print("wrong channel")
         #     return "null"
         # else:
-        print("counting")
         ul.c_clear(self.board_num, counterchannel)
         t=0
         while t <= dt:

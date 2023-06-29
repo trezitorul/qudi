@@ -34,7 +34,7 @@ class DashboardGUI(GUIBase):
     laclogic = Connector(interface='LACLogic')
     querylogic = Connector(interface='QueryLoopLogic')
     aptlogic = Connector(interface='APTpiezoLogic')
-    # flipperlogic = Connector(interface='FlipperMirrorLogic')
+    flipperlogic = Connector(interface='FlipperMirrorLogic')
     daqcounter1 = Connector(interface='DaqCounter')
     daqcounter2 = Connector(interface='DaqCounter')
 
@@ -53,7 +53,7 @@ class DashboardGUI(GUIBase):
         self._laclogic = self.laclogic()
         self._querylogic = self.querylogic()
         self._aptlogic = self.aptlogic()
-        # self._flipperlogic = self.flipperlogic()
+        self._flipperlogic = self.flipperlogic()
         self._daqcounter1 = self.daqcounter1()
         self._daqcounter2 = self.daqcounter2()
 
@@ -253,8 +253,8 @@ class DashboardGUI(GUIBase):
         self._pidlogic.set_kd(kd)
 
     def flipOn(self, num):
-        # self._flipperlogic.set_mode('on', num)
-        pass
+        self._flipperlogic.set_mode('on', num)
+        # pass
 
     def flipOff(self, num):
         # self._flipperlogic.set_mode('off', num)
