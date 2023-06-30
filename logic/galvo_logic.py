@@ -39,10 +39,12 @@ class GalvoLogic(GenericLogic):
         """
         pass
 
-    def setPosition(self, position):
+    def setPosition(self, voltage):
 
-        self.setX(position[0])
-        self.setY(position[1])
+        # self.setX(position[0])
+        # self.setY(position[1])
+        self.setDiffVoltage(0,1,voltage[0])
+        self.setDiffVoltage(2,3,voltage[1])
 
     def getPosition(self):
         """
@@ -54,7 +56,8 @@ class GalvoLogic(GenericLogic):
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
 
-        position = [self.getX(), self.getY()]
+        position = [self.getDiffVoltage(0,1), self.getDiffVoltage(2,3)]
+        print(position)
         return position
     
     def setMode(self,mode):

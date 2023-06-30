@@ -97,10 +97,10 @@ class DashboardGUI(GUIBase):
         self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
         self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
 
-        self._mw.galvoUpButton.clicked.connect(lambda: self.move(1,1))
-        self._mw.galvoDownButton.clicked.connect(lambda: self.move(1,-1))
-        self._mw.galvoLeftButton.clicked.connect(lambda: self.move(0,-1))
-        self._mw.galvoDownButton.clicked.connect(lambda: self.move(0,1))
+        self._mw.galvoUpButton.clicked.connect(lambda: self.moveGalvo(1,1))
+        self._mw.galvoDownButton.clicked.connect(lambda: self.moveGalvo(1,-1))
+        self._mw.galvoLeftButton.clicked.connect(lambda: self.moveGalvo(0,-1))
+        self._mw.galvoDownButton.clicked.connect(lambda: self.moveGalvo(0,1))
 
         self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
         self._mw.stopButton.clicked.connect(self.emitStopPID)
@@ -264,8 +264,8 @@ class DashboardGUI(GUIBase):
 
     def updateGalvoDisplay(self):
         self.galvoPosition = self._galvologic.getPosition()
-        self._mw.galvoXVal.setText(str(round(self.galvoPosition[0])))
-        self._mw.galvoYVal.setText(str(round(self.galvoPosition[1])))
+        self._mw.galvoXVal.setText(str(round(self.galvoPosition[0],3)))
+        self._mw.galvoYVal.setText(str(round(self.galvoPosition[1],3)))
     
     def change_kP(self):
         kp = self._mw.k_P.value()
