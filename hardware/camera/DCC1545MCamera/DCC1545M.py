@@ -44,7 +44,8 @@ class DCC1545M(Base, CameraInterface):
 
     
     def on_deactivate(self):
-        self.camera.disconnect()
+        self.stop_acquisition()
+        # self.camera.disconnect()
 
 
     def get_name(self):
