@@ -15,11 +15,14 @@ class DaqCounter(GenericLogic):
     _counterchannel = ConfigOption(name='counterchannel', missing='error')
 
     daq = Connector(interface='DAQ')
+
+    queryInterval = ConfigOption('query_interval', 100)
+
+    counts = 0
+
     
     # signals
     sigUpdateDisplay = QtCore.Signal()
-
-    # Connect signals
 
     def on_activate(self):
         """ Prepare logic module for work.
@@ -28,8 +31,57 @@ class DaqCounter(GenericLogic):
         self._daq = self.daq()
         self.counterchannel = int(self._counterchannel)
 
+        self.stopRequest = False
+        self.bufferLength = 100
+
+        # delay timer for querying hardware
+        self.queryTimer = QtCore.QTimer()
+        self.queryTimer.setInterval(self.queryInterval)
+        self.queryTimer.setSingleShot(True)
+        self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
+
+        self.start_query_loop()
+
     def on_deactivate(self):
-        pass
+        self.stop_query_loop()
+        for i in range(5):
+            time.sleep(self.queryInterval / 1000)
+            QtCore.QCoreApplication.processEvents()
+
+    @QtCore.Slot()
+    def start_query_loop(self):
+        """ Start the readout loop. """
+        self.module_state.run()
+        self.queryTimer.start(self.queryInterval)
+
+    @QtCore.Slot()
+    def stop_query_loop(self):
+        """ Stop the readout loop. """
+        self.stopRequest = True
+        for i in range(10):
+            if not self.stopRequest:
+                return
+            QtCore.QCoreApplication.processEvents()
+            time.sleep(self.queryInterval/1000)
+    
+    @QtCore.Slot()
+    def check_loop(self):
+        """ Get position and update display. """
+        if self.stopRequest:
+            if self.module_state.can('stop'):
+                self.module_state.stop()
+            self.stopRequest = False
+            return
+        qi = self.queryInterval
+        try:
+            self.counts = self.getCounts(0.001)
+
+        except:
+            qi = 3000
+            self.log.exception("Exception in piezo status loop, throttling refresh rate.")
+
+        self.queryTimer.start(qi)
+        self.sigUpdateDisplay.emit()
 
     def getCounts(self,dt):
         '''

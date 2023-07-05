@@ -14,8 +14,13 @@ class GalvoLogic(GenericLogic):
     """
 
     daq = Connector(interface='DAQ')
+    queryInterval = ConfigOption('query_interval', 100)
+
+    position = [0,0]
+
 
     # Connect signals
+    sigUpdateDisplay = QtCore.Signal()
 
     def on_activate(self):
         """ Prepare logic module for work.
@@ -33,11 +38,60 @@ class GalvoLogic(GenericLogic):
         self.VToA=10 #Volts per Optical Scan Angle (1/2 * 0.5 V per Mechanical Angle, Optical Scan Angle is 2X Mechanical Scan Angle)
         self.projectionDistance=10.63*self.um #1/tan(31) used for development only, corresponds to max displacement of the X axis at theta=31 degrees. Units can be chosen arbitrarily for now as um=1
 
+        self.stopRequest = False
+        self.bufferLength = 100
+
+        # delay timer for querying hardware
+        self.queryTimer = QtCore.QTimer()
+        self.queryTimer.setInterval(self.queryInterval)
+        self.queryTimer.setSingleShot(True)
+        self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
+
+        self.start_query_loop()
+
 
     def on_deactivate(self):
         """ Deactivate modeule.
         """
-        pass
+        self.stop_query_loop()
+        for i in range(5):
+            time.sleep(self.queryInterval / 1000)
+            QtCore.QCoreApplication.processEvents()
+
+    @QtCore.Slot()
+    def start_query_loop(self):
+        """ Start the readout loop. """
+        self.module_state.run()
+        self.queryTimer.start(self.queryInterval)
+
+    @QtCore.Slot()
+    def stop_query_loop(self):
+        """ Stop the readout loop. """
+        self.stopRequest = True
+        for i in range(10):
+            if not self.stopRequest:
+                return
+            QtCore.QCoreApplication.processEvents()
+            time.sleep(self.queryInterval/1000)
+    
+    @QtCore.Slot()
+    def check_loop(self):
+        """ Get position and update display. """
+        if self.stopRequest:
+            if self.module_state.can('stop'):
+                self.module_state.stop()
+            self.stopRequest = False
+            return
+        qi = self.queryInterval
+        try:
+            self.position = self.getPosition()
+
+        except:
+            qi = 3000
+            self.log.exception("Exception in piezo status loop, throttling refresh rate.")
+
+        self.queryTimer.start(qi)
+        self.sigUpdateDisplay.emit()
 
     def setPosition(self, voltage):
 
@@ -57,7 +111,6 @@ class GalvoLogic(GenericLogic):
         """
 
         position = [self.getDiffVoltage(0,1), self.getDiffVoltage(2,3)]
-        print(position)
         return position
     
     def setMode(self,mode):

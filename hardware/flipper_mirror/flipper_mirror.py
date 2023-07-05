@@ -56,12 +56,15 @@ class FlipperMirror(Base):
         self.deviceID = self._deviceID
         self._FlipperMirror = self.SetupDevice(self.deviceID)
 
-        # Reser the flipper
+        # Reset the flipper
         self.HomeMirror()
         self.SetMode("on")
+        pass
     
     def on_deactivate(self):
-            pass
+        self.device.StopPolling()
+        self.device.Disconnect(True)
+
     
     def SetupDevice(self,deviceID):
         '''
@@ -71,12 +74,13 @@ class FlipperMirror(Base):
 
         self.device = FilterFlipper.CreateFilterFlipper(str(deviceID))
 
-        self.device.Connect(deviceID)
-        self.device.StartPolling(1)
+        self.device.Connect(deviceID) #this does not like the camera
+        self.device.StartPolling(250)
         time.sleep(0.25)
         self.device.EnableDevice()
         time.sleep(0.25)
         return self.device
+        # pass
 
     def SetMode(self,mode):
         '''
@@ -89,6 +93,7 @@ class FlipperMirror(Base):
         else:
             print('wrong mode, try again')
         return
+        # pass
     
     def HomeMirror(self):
         '''

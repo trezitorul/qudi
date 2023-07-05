@@ -102,7 +102,7 @@ class DashboardGUI(GUIBase):
         self._mw.galvoLeftButton.clicked.connect(lambda: self.moveGalvo(0,-1))
         self._mw.galvoDownButton.clicked.connect(lambda: self.moveGalvo(0,1))
 
-        self._mw.startButton.clicked.connect(self.emitStartPID) #could also connect directly to logic
+        self._mw.startButton.clicked.connect(self.emitStartPID)
         self._mw.stopButton.clicked.connect(self.emitStopPID)
         self._mw.manualButton.clicked.connect(self.startManual)
         self._mw.PIDbutton.clicked.connect(self.startPID)
@@ -131,11 +131,12 @@ class DashboardGUI(GUIBase):
         self._querylogic.sigUpdateVariable.connect(self.updatePlot)
         self._aptlogic.sigUpdateDisplay.connect(self.updatePiezoDisplay)
 
-        self._aptlogic.sigUpdateDisplay.connect(self.count)
-        self._aptlogic.sigUpdateDisplay.connect(self.updateGalvoDisplay)
+        self._daqcounter1.sigUpdateDisplay.connect(self.count)
+        self._daqcounter2.sigUpdateDisplay.connect(self.count)
+        self._galvologic.sigUpdateDisplay.connect(self.updateGalvoDisplay)
 
-        # self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        # self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
+        self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
 
         # self._laclogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         # self.sigStartPM.connect(self._pidlogic.startPID)
@@ -165,9 +166,7 @@ class DashboardGUI(GUIBase):
         """
         if (is_PID):
             self.timePass += 1
-            self.powerOutputArr.append(self._pidlogic.pv)
-            # self.powerOutputArr.append(self._pmlogic.power)
-            
+            self.powerOutputArr.append(self._pidlogic.pv)            
             self.curvearr[0].setData(
                 y = np.asarray(self.powerOutputArr),
                 x = np.arange(0, self.timePass)
@@ -195,12 +194,10 @@ class DashboardGUI(GUIBase):
 
 
     def startPID(self):
-        # self._querylogic.stop_query_loop()
         self._querylogic.sigStopQuery.emit()
         # self.sigStartPM.emit()
         self._mw.startButton.setEnabled(True)
         self._mw.stopButton.setEnabled(True)
-        # self._pidlogic.startFunc()
         # self._laclogic.stop_query_loop()
         # self._pmlogic.stop_query_loop()
 
@@ -217,7 +214,6 @@ class DashboardGUI(GUIBase):
         self._pidlogic.sigStopPID.emit()
         # time.sleep(3)
         # Start loop
-        # self._querylogic.start_query_loop()
         self._querylogic.sigStartQuery.emit()
 
         # Disable buttons
@@ -263,7 +259,7 @@ class DashboardGUI(GUIBase):
         self._mw.zVal.setText(str(self.position[2]))
 
     def updateGalvoDisplay(self):
-        self.galvoPosition = self._galvologic.getPosition()
+        self.galvoPosition = self._galvologic.position
         self._mw.galvoXVal.setText(str(round(self.galvoPosition[0],3)))
         self._mw.galvoYVal.setText(str(round(self.galvoPosition[1],3)))
     
@@ -288,7 +284,7 @@ class DashboardGUI(GUIBase):
         # pass
 
     def count(self):
-        self.count1 = self._daqcounter1.getCounts(0.001)
-        self.count2 = self._daqcounter2.getCounts(0.001)
+        self.count1 = self._daqcounter1.counts
+        self.count2 = self._daqcounter2.counts
         self._mw.daq_channel1.setText(str(self.count1))
         self._mw.daq_channel2.setText(str(self.count2))

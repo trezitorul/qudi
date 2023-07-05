@@ -29,19 +29,8 @@ class PiezoGUI(GUIBase):
     # CONNECTORS #############################################################
     aptlogic = Connector(interface='APTpiezoLogic')
 
-    # SIGNALS ################################################################
-    # sigStartScan = QtCore.Signal()
-    # sigStopScan = QtCore.Signal()
-    # sigChangeVoltage = QtCore.Signal(float)
-    # sigChangeRange = QtCore.Signal(list)
-    # sigChangeResolution = QtCore.Signal(float)
-    # sigChangeSpeed = QtCore.Signal(float)
-    # sigChangeLines = QtCore.Signal(int)
-    # sigSaveMeasurement = QtCore.Signal(str, list, list)
-
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
-        self.position = [0, 0, 0]
 
     def on_deactivate(self):
         """ Reverse steps of activation
@@ -62,6 +51,7 @@ class PiezoGUI(GUIBase):
         self._mw = PiezoMainWindow()
 
         # Set default parameters
+        self.position = [0, 0, 0]
         self._mw.StepSize.setValue(10)
         self.stepSize = 10
 
@@ -76,6 +66,7 @@ class PiezoGUI(GUIBase):
 
         # Connect update signal
         self._aptlogic.sigUpdateDisplay.connect(self.updateDisplay)
+        self.show()
     
     def move(self, axis, direction):
         """Move piezo
@@ -87,10 +78,6 @@ class PiezoGUI(GUIBase):
 
         position = self.position
         position[axis] = self.position[axis] + self.stepSize * direction
-        # self._mw.xVal.setText(str(position[0]))
-        # self._mw.yVal.setText(str(position[1]))
-        # self._mw.zVal.setText(str(position[2]))
-        # print(self.position)
 
         self._aptlogic.setPosition(position)
     
@@ -102,3 +89,10 @@ class PiezoGUI(GUIBase):
         self._mw.xVal.setText(str(self.position[0]))
         self._mw.yVal.setText(str(self.position[1]))
         self._mw.zVal.setText(str(self.position[2]))
+
+    def show(self):
+        """Make main window visible and put it above all other windows. """
+        # Show the Main GUI:
+        self._mw.show()
+        self._mw.activateWindow()
+        self._mw.raise_()

@@ -45,6 +45,7 @@ class DAQ(Base):
         Deinitialisation performed during deactivation of the module.
         """
         self.setZero()
+        # pass
 
 
     def setMode(self,mode):
@@ -82,7 +83,7 @@ class DAQ(Base):
             print("invalid voltage on" + str(channel_out)+" of " + str(voltage) + "please reenter correct voltage")
             return
         else:
-            print(voltage)
+            # print(voltage)
             voltVal=ul.from_eng_units(self.board_num, self.range, voltage)
             value_out = ul.a_out(self.board_num, channel_out, self.range,voltVal)
             return

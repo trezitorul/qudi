@@ -100,10 +100,6 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
         self.kI=0
         self.kD=0.01
 
-        # self.timer.start(self.timestep) # moved into start func
-    
-    # def startFunc(self):
-    #     self.timer.start(self.timestep)
 
     def on_deactivate(self):
         """ Perform required deactivation.

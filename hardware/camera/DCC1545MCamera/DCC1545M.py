@@ -45,7 +45,7 @@ class DCC1545M(Base, CameraInterface):
     
     def on_deactivate(self):
         self.stop_acquisition()
-        # self.camera.disconnect()
+        self.camera.disconnect()
 
 
     def get_name(self):
@@ -90,7 +90,7 @@ class DCC1545M(Base, CameraInterface):
 
         @return bool: Success ?
         """
-        self.camera.disconnect()
+        # self.camera.disconnect()
         return True
 
 

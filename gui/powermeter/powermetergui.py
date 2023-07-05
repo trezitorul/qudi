@@ -28,12 +28,11 @@ class PowerMeterGUI(GUIBase):
     """
     
     # CONNECTORS #############################################################
-    # pmlogic = Connector(interface='PowerMeterLogic')
-    pidlogic = Connector(interface='SoftPIDController')
-    # laclogic = Connector(interface='LACLogic')
+    pmlogic = Connector(interface='PowerMeterLogic')
 
     # SIGNALS ################################################################
     sigStartPM = QtCore.Signal()
+    sigStopPM = QtCore.Signal()
    
 
     def __init__(self, config, **kwargs):
@@ -53,9 +52,7 @@ class PowerMeterGUI(GUIBase):
         """
 
         # CONNECTORS PART 2 ###################################################
-        # self._pmlogic = self.pmlogic()
-        self._pidlogic = self.pidlogic()
-        # self._laclogic = self.laclogic()
+        self._pmlogic = self.pmlogic()
 
         self._mw = PowerMeterMainWindow()
         
@@ -77,53 +74,33 @@ class PowerMeterGUI(GUIBase):
 
         # Connect buttons to functions
         self._mw.startButton.clicked.connect(self.startGUI) #could also connect directly to logic
-
-        # Connect spin box
-        self._mw.powerInput.valueChanged.connect(self.setPowerInput)
-        self._mw.posInput.valueChanged.connect(self.setPosInput)
+        self._mw.stopButton.clicked.connect(self.stopGUI)
 
         # Connect signals
-        self._pidlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        self._pidlogic.sigUpdatePMDisplay.connect(self.updatePlot)
+        self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
+        self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
 
-        # self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        # self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
-
-        # self._laclogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        # self.sigStartPM.connect(self._laclogic.start_query_loop)
-        # self.sigStartPM.connect(self._pmlogic.start_query_loop)
-        self.sigStartPM.connect(self._pidlogic.startFunc)
+        self.sigStartPM.connect(self._pmlogic.start_query_loop)
+        self.sigStopPM.connect(self._pmlogic.stop_query_loop)
 
 
     def updateDisplay(self):
-        self._mw.powerOutput.setText(str(self._pidlogic.pv))
-        self._mw.posOutput.setText(str(self._pidlogic.cv))
+        self._mw.powerOutput.setText(str(round(self._pmlogic.power, 3)))
 
 
     def updatePlot(self):
         """ The function that grabs the data and sends it to the plot.
         """
         self.timePass += 1
-        self.powerOutputArr.append(self._pidlogic.pv)
-        # self.powerOutputArr.append(self._pmlogic.power)
+        self.powerOutputArr.append(self._pmlogic.power)
         
         self.curvearr[0].setData(
             y = np.asarray(self.powerOutputArr),
             x = np.arange(0, self.timePass)
             )
 
-
-    def setPowerInput(self):
-        self.powerInput = self._mw.powerInput.value()
-        self._pidlogic.set_setpoint(self.powerInput)
-
-
-    def setPosInput(self):
-        # self.posInput = self._mw.posInput.value()
-        # self._laclogic.set_pos(self.posInput)
-        return
-
-
-
     def startGUI(self):
         self.sigStartPM.emit()
+
+    def stopGUI(self):
+        self.sigStopPM.emit()
