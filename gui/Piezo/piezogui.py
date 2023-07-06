@@ -58,9 +58,9 @@ class PiezoGUI(GUIBase):
 
         # Connect buttons to functions
         self._mw.StepSize.valueChanged.connect(self.stepChanged)
-        self._mw.inputX.valueChanged.connect(self.manualInput)
-        self._mw.inputY.valueChanged.connect(self.manualInput)
-        self._mw.inputZ.valueChanged.connect(self.manualInput)
+        # self._mw.inputX.valueChanged.connect(self.manualInput)
+        # self._mw.inputY.valueChanged.connect(self.manualInput)
+        # self._mw.inputZ.valueChanged.connect(self.manualInput)
 
         self._mw.upButton.clicked.connect(lambda: self.move(1,1))
         self._mw.downButton.clicked.connect(lambda: self.move(1,-1))
@@ -69,6 +69,8 @@ class PiezoGUI(GUIBase):
         self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
         self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
         self._mw.switchMode.clicked.connect(self.updateButton)
+
+        self._mw.moveManual.clicked.connect(self.manualInput)
 
         # Connect update signal
         self._aptlogic.sigUpdateDisplay.connect(self.updateDisplay)

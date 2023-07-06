@@ -111,19 +111,18 @@ class LtuneLaserGUI(GUIBase):
                 )
 
 
-
-    
     def setPower(self):
+        self.power = self._mw.powerInput.value()
+
         if (self.enabled):
-            self.power = self._mw.powerInput.value()
             self._ltunelaserlogic.set_power(self.power)
-        else:
-            raise ValueError("The laser is not enabled")
 
     def updateButton(self):
         if (self.enabled == False):
             self._ltunelaserlogic.enable_laser()
             self.enabled = True
+            if (self.power != 0):
+                self._ltunelaserlogic.set_power(self.power)
             self._mw.switchLaser.setText("Disable Laser")
         else:
             self._ltunelaserlogic.disable_laser()

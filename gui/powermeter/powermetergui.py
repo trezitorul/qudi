@@ -89,7 +89,13 @@ class PowerMeterGUI(GUIBase):
         self.timePass += 1
         self.powerOutputArr.append(self._pmlogic.power)
         
-        self.curvearr[0].setData(
-            y = np.asarray(self.powerOutputArr),
-            x = np.arange(0, self.timePass)
-            )
+        if (self.timePass < 200):
+            self.curvearr[0].setData(
+                y = np.asarray(self.powerOutputArr),
+                x = np.arange(0, self.timePass)
+                )
+        else:
+            self.curvearr[0].setData(
+                y = np.asarray(self.powerOutputArr[self.timePass - 200:self.timePass]),
+                x = np.arange(self.timePass - 200, self.timePass)
+                )

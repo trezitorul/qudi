@@ -49,7 +49,8 @@ class PolarMotordGUI(GUIBase):
 
 
         # Connect spin boxes
-        self._mw.inputDegree.valueChanged.connect(self.setDegInput)
+        self._mw.inputDegree.valueChanged.connect(self.updatePosition)
+        self._mw.moveButton.clicked.connect(self.setPosInput)
 
         # Connect signals
         self._polarlogic.sigUpdatePolarMotorDisplay.connect(self.updateDisplay)
@@ -62,15 +63,13 @@ class PolarMotordGUI(GUIBase):
         """
         self._mw.close()
 
+    def updatePosition(self):
+        self.posInput = self._mw.inputDegree.value()
 
-    def setDegInput(self):
 
-        self.degInput = self._mw.inputDegree.value()
-        self._polarlogic.set_position(self.degInput)
-        return
+    def setPosInput(self):
+        self._polarlogic.set_position(self.posInput)
 
 
     def updateDisplay(self):
-        self.degInput = self._polarlogic.position
-        self._mw.currDegree.setText(str(self.degInput))
-
+        self._mw.currDegree.setText(str(self._polarlogic.position))

@@ -117,10 +117,10 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         if self.countdown > 0:
             self.countdown -= 1
-            print(self.setpoint)
-            print(self.pv)
+            # print(self.setpoint)
+            # print(self.pv)
             self.previousdelta = self.setpoint - self.pv
-            print('Countdown: ', self.countdown)
+            # print('Countdown: ', self.countdown)
         elif self.countdown == 0:
             self.countdown = -1
             self.integrated = 0
@@ -130,17 +130,17 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
             delta = self.setpoint - self.pv
             if (abs(delta)/self.pv)<=self.relErr:
                 delta=0
-            print("Delta "+str(delta))
+            # print("Delta "+str(delta))
             self.integrated += delta
             ## Calculate PID controller:
             self.P = self.kP * delta
-            print("kP "+ str(self.kP))
-            print("P "+str(self.P))
+            # print("kP "+ str(self.kP))
+            # print("P "+str(self.P))
             self.I = self.kI * self.timestep * self.integrated
             self.D = self.kD / self.timestep * (delta - self.previousdelta)
 
             self.cv += self.P + self.I + self.D
-            print(self.cv)
+            # print(self.cv)
             self.previousdelta = delta
 
             ## limit contol output to maximum permissible limits
