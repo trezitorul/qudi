@@ -54,20 +54,27 @@ class PiezoGUI(GUIBase):
         self.position = [0, 0, 0]
         self._mw.StepSize.setValue(10)
         self.stepSize = 10
+        self.is_manual = True
 
         # Connect buttons to functions
         self._mw.StepSize.valueChanged.connect(self.stepChanged)
+        self._mw.inputX.valueChanged.connect(self.manualInput)
+        self._mw.inputY.valueChanged.connect(self.manualInput)
+        self._mw.inputZ.valueChanged.connect(self.manualInput)
+
         self._mw.upButton.clicked.connect(lambda: self.move(1,1))
         self._mw.downButton.clicked.connect(lambda: self.move(1,-1))
         self._mw.leftButton.clicked.connect(lambda: self.move(0,-1))
         self._mw.rightButton.clicked.connect(lambda: self.move(0,1))
         self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
         self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
+        self._mw.switchMode.clicked.connect(self.updateButton)
 
         # Connect update signal
         self._aptlogic.sigUpdateDisplay.connect(self.updateDisplay)
         self.show()
-    
+
+
     def move(self, axis, direction):
         """Move piezo
 
@@ -75,20 +82,32 @@ class PiezoGUI(GUIBase):
             axis (int): 0->x, 1->y, 2->z
             direction (int, optional): Step direction. Defaults to 1.
         """
+        if (not self.is_manual):
+            position = self.position
+            position[axis] = self.position[axis] + self.stepSize * direction
 
-        position = self.position
-        position[axis] = self.position[axis] + self.stepSize * direction
+            self._aptlogic.setPosition(position)
 
-        self._aptlogic.setPosition(position)
-    
+
     def stepChanged(self):
         self.stepSize = self._mw.StepSize.value()
+
+    def manualInput(self):
+        if (self.is_manual):
+            position = [self._mw.inputX.value(), self._mw.inputY.value(), self._mw.inputZ.value()]
+            self.position = position
+            self._aptlogic.setPosition(position)
+
 
     def updateDisplay(self):
         self.position = self._aptlogic.position
         self._mw.xVal.setText(str(self.position[0]))
         self._mw.yVal.setText(str(self.position[1]))
         self._mw.zVal.setText(str(self.position[2]))
+        if (not self.is_manual):
+            self._mw.inputX.setValue(self.position[0])
+            self._mw.inputY.setValue(self.position[1])
+            self._mw.inputZ.setValue(self.position[2])
 
     def show(self):
         """Make main window visible and put it above all other windows. """
@@ -96,3 +115,12 @@ class PiezoGUI(GUIBase):
         self._mw.show()
         self._mw.activateWindow()
         self._mw.raise_()
+
+
+    def updateButton(self):
+        if (self.is_manual == False):
+            self.is_manual = True
+            self._mw.switchMode.setText("Move by Input")
+        else:
+            self.is_manual = False
+            self._mw.switchMode.setText("Move by Step")
