@@ -33,75 +33,77 @@ class LACLogic(GenericLogic):
     """
 
     LACmotor = Connector(interface='MotorInterface')
-    queryLoop = Connector(interface='QueryLoopLogic')
-    # queryInterval = ConfigOption('query_interval', 100)
+    queryInterval = ConfigOption('query_interval', 100)
 
     # signals
-    sigUpdatePMDisplay = QtCore.Signal()
-
-    # Connect signals
+    sigUpdateLACDisplay = QtCore.Signal()
+    sigStart = QtCore.Signal()
+    sigStop = QtCore.Signal()
 
     def on_activate(self):
         """ Prepare logic module for work.
         """
         self._LACmotor = self.LACmotor()
-        self._queryLoop = self.queryLoop()
 
-        # self.stopRequest = False
-        # self.bufferLength = 100
+        self.stopRequest = False
+        self.bufferLength = 100
         self.position = 0
-        self._queryLoop.sigUpdateVariable.connect(self.get_pos)
+
+        # Connect signals
+        self.sigStart.connect(self.start_query_loop)
+        self.sigStop.connect(self.stop_query_loop)
 
         # delay timer for querying hardware
-        # self.queryTimer = QtCore.QTimer()
-        # self.queryTimer.setInterval(self.queryInterval)
-        # self.queryTimer.setSingleShot(True)
-        # self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
+        self.queryTimer = QtCore.QTimer()
+        self.queryTimer.setInterval(self.queryInterval)
+        self.queryTimer.setSingleShot(True)
+        self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
+
+        self.isRunning = False
 
 
     def on_deactivate(self):
         """ Deactivate modeule.
         """
-        # self.stop_query_loop()
-        # for i in range(5):
-        #     time.sleep(self.queryInterval / 1000)
-        #     QtCore.QCoreApplication.processEvents()
-        pass
+        self.stop_query_loop()
+        for i in range(5):
+            time.sleep(self.queryInterval / 1000)
+            QtCore.QCoreApplication.processEvents()
 
-    # @QtCore.Slot()
-    # def start_query_loop(self):
-    #     """ Start the readout loop. """
-    #     self.module_state.run()
-    #     self.queryTimer.start(self.queryInterval)
+    @QtCore.Slot()
+    def start_query_loop(self):
+        """ Start the readout loop. """
+        self.module_state.run()
+        self.queryTimer.start(self.queryInterval)
 
-    # @QtCore.Slot()
-    # def stop_query_loop(self):
-    #     """ Stop the readout loop. """
-    #     self.stopRequest = True
-    #     for i in range(10):
-    #         if not self.stopRequest:
-    #             return
-    #         QtCore.QCoreApplication.processEvents()
-    #         time.sleep(self.queryInterval/1000)
+    @QtCore.Slot()
+    def stop_query_loop(self):
+        """ Stop the readout loop. """
+        self.stopRequest = True
+        for i in range(10):
+            if not self.stopRequest:
+                return
+            QtCore.QCoreApplication.processEvents()
+            time.sleep(self.queryInterval/1000)
 
 
-    # @QtCore.Slot()
-    # def check_loop(self):
-    #     """ Get power and update display. """
-    #     if self.stopRequest:
-    #         if self.module_state.can('stop'):
-    #             self.module_state.stop()
-    #         self.stopRequest = False
-    #         return
-    #     qi = self.queryInterval
-    #     try:
-    #         self.position = self._LACmotor.get_pos()
-    #     except:
-    #         qi = 3000
-    #         self.log.exception("Exception in LAC status loop, throttling refresh rate.")
+    @QtCore.Slot()
+    def check_loop(self):
+        """ Get power and update display. """
+        if self.stopRequest:
+            if self.module_state.can('stop'):
+                self.module_state.stop()
+            self.stopRequest = False
+            return
+        qi = self.queryInterval
+        try:
+            self.position = self.get_pos()
+        except:
+            qi = 3000
+            self.log.exception("Exception in LAC status loop, throttling refresh rate.")
 
-    #     self.queryTimer.start(qi)
-    #     self.sigUpdatePMDisplay.emit()
+        self.queryTimer.start(qi)
+        self.sigUpdateLACDisplay.emit()
 
 
     def set_pos(self, position):
@@ -109,6 +111,16 @@ class LACLogic(GenericLogic):
 
     
     def get_pos(self):
-        self.position = self._LACmotor.get_pos()
-        return self.position
+        position = self._LACmotor.get_pos()
+        return position
+    
+    def start(self):
+        if not self.isRunning:
+            self.sigStart.emit()
+            self.isRunning = True
+        else:
+            pass
 
+    def stop(self):
+        self.sigStop.emit()
+        self.isRunning = False

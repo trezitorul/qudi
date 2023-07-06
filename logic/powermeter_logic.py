@@ -38,6 +38,9 @@ class PowerMeterLogic(GenericLogic):
     # Signals
 
     sigUpdatePMDisplay = QtCore.Signal()
+    sigStart = QtCore.Signal()
+    sigStop = QtCore.Signal()
+
 
     def on_activate(self):
         """ Prepare logic module for work.
@@ -48,6 +51,11 @@ class PowerMeterLogic(GenericLogic):
         self.bufferLength = 100
 
         self.power = 0
+        self.isRunning = False
+
+        # Connect signals
+        self.sigStart.connect(self.start_query_loop)
+        self.sigStop.connect(self.stop_query_loop)
 
         # delay timer for querying hardware
         self.queryTimer = QtCore.QTimer()
@@ -99,7 +107,17 @@ class PowerMeterLogic(GenericLogic):
         self.queryTimer.start(qi)
         self.sigUpdatePMDisplay.emit()
 
-
     def get_power(self):
         power = self._powermeter.get_process_value()
         return power
+    
+    def start(self):
+        if not self.isRunning:
+            self.sigStart.emit()
+            self.isRunning = True
+        else:
+            pass
+
+    def stop(self):
+        self.sigStop.emit()
+        self.isRunning = False

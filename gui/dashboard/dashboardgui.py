@@ -84,6 +84,7 @@ class DashboardGUI(GUIBase):
         self.position = [0, 0, 0]
         self.count1 = 0
         self.count2 = 0
+        self.isPID = False
 
         self._mw.GalvoStepSize.setValue(10)
         self.galvoPosition = [0, 0]
@@ -102,10 +103,10 @@ class DashboardGUI(GUIBase):
         self._mw.galvoLeftButton.clicked.connect(lambda: self.moveGalvo(0,-1))
         self._mw.galvoDownButton.clicked.connect(lambda: self.moveGalvo(0,1))
 
-        self._mw.startButton.clicked.connect(self.emitStartPID)
-        self._mw.stopButton.clicked.connect(self.emitStopPID)
-        self._mw.manualButton.clicked.connect(self.startManual)
-        self._mw.PIDbutton.clicked.connect(self.startPID)
+        self._mw.startButton.clicked.connect(self.start)
+        self._mw.stopButton.clicked.connect(self.stop)
+        self._mw.manualButton.clicked.connect(self.manualMode)
+        self._mw.PIDbutton.clicked.connect(self.PIDmode)
 
         self._mw.onButton_1.clicked.connect(lambda: self.flipOn(1))
         self._mw.onButton_2.clicked.connect(lambda: self.flipOn(2))
@@ -127,8 +128,8 @@ class DashboardGUI(GUIBase):
         self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
         self._pidlogic.sigUpdatePIDDisplay.connect(self.updatePlot)
 
-        self._querylogic.sigUpdateVariable.connect(self.updateDisplay)
-        self._querylogic.sigUpdateVariable.connect(self.updatePlot)
+        # self._querylogic.sigUpdateVariable.connect(self.updateDisplay)
+        # self._querylogic.sigUpdateVariable.connect(self.updatePlot)
         self._aptlogic.sigUpdateDisplay.connect(self.updatePiezoDisplay)
 
         self._daqcounter1.sigUpdateDisplay.connect(self.count)
@@ -138,8 +139,7 @@ class DashboardGUI(GUIBase):
         self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
 
-        # self._laclogic.sigUpdatePMDisplay.connect(self.updateDisplay)
-        # self.sigStartPM.connect(self._pidlogic.startPID)
+        self._laclogic.sigUpdateLACDisplay.connect(self.updateDisplay)
 
 
 
@@ -152,8 +152,8 @@ class DashboardGUI(GUIBase):
         #return 0
 
 
-    def updateDisplay(self, is_PID):
-        if (is_PID):
+    def updateDisplay(self):
+        if (self.isPID):
             self._mw.powerOutput.setText(str(round(self._pidlogic.pv, 3)))
             self._mw.posOutput.setText(str(round(self._pidlogic.cv, 3)))
         else:
@@ -161,10 +161,10 @@ class DashboardGUI(GUIBase):
             self._mw.posOutput.setText(str(round(self._laclogic.position, 3)))
 
 
-    def updatePlot(self, is_PID):
+    def updatePlot(self):
         """ The function that grabs the data and sends it to the plot.
         """
-        if (is_PID):
+        if (self.isPID):
             self.timePass += 1
             self.powerOutputArr.append(self._pidlogic.pv)            
             self.curvearr[0].setData(
@@ -193,32 +193,33 @@ class DashboardGUI(GUIBase):
         return
 
 
-    def startPID(self):
-        self._querylogic.sigStopQuery.emit()
-        # self.sigStartPM.emit()
-        self._mw.startButton.setEnabled(True)
-        self._mw.stopButton.setEnabled(True)
-        # self._laclogic.stop_query_loop()
-        # self._pmlogic.stop_query_loop()
+    def PIDmode(self):
+        # # self._querylogic.sigStopQuery.emit()
+        # self._pidlogic.sigStartPID.emit()
+        # self._mw.startButton.setEnabled(True)
+        # self._mw.stopButton.setEnabled(True)
+        self._laclogic.stop()
+        self.isPID = True
 
-
-    def emitStartPID(self):
-        self._pidlogic.sigStartPID.emit()
-
-
-    def emitStopPID(self):
+    def manualMode(self):
         self._pidlogic.sigStopPID.emit()
+        self.isPID = False
 
 
-    def startManual(self):
-        self._pidlogic.sigStopPID.emit()
-        # time.sleep(3)
-        # Start loop
-        self._querylogic.sigStartQuery.emit()
+    def start(self):
+        if self.isPID:
+            self._pidlogic.sigStartPID.emit()
+        else:
+            self._laclogic.start()
 
-        # Disable buttons
-        self._mw.startButton.setEnabled(False)
-        self._mw.stopButton.setEnabled(False)
+        self._pmlogic.start()
+
+    def stop(self):
+        if self.isPID:
+            self._pidlogic.sigStopPID.emit()
+        else:
+            self._laclogic.stop()
+        self._pmlogic.stop()
 
     def move(self, axis, direction):
         """Move piezo

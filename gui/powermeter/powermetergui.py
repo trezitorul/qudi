@@ -31,8 +31,6 @@ class PowerMeterGUI(GUIBase):
     pmlogic = Connector(interface='PowerMeterLogic')
 
     # SIGNALS ################################################################
-    sigStartPM = QtCore.Signal()
-    sigStopPM = QtCore.Signal()
    
 
     def __init__(self, config, **kwargs):
@@ -73,15 +71,12 @@ class PowerMeterGUI(GUIBase):
         # Set default parameters
 
         # Connect buttons to functions
-        self._mw.startButton.clicked.connect(self.startGUI) #could also connect directly to logic
-        self._mw.stopButton.clicked.connect(self.stopGUI)
+        self._mw.startButton.clicked.connect(self._pmlogic.start) #could also connect directly to logic
+        self._mw.stopButton.clicked.connect(self._pmlogic.stop)
 
         # Connect signals
         self._pmlogic.sigUpdatePMDisplay.connect(self.updateDisplay)
         self._pmlogic.sigUpdatePMDisplay.connect(self.updatePlot)
-
-        self.sigStartPM.connect(self._pmlogic.start_query_loop)
-        self.sigStopPM.connect(self._pmlogic.stop_query_loop)
 
 
     def updateDisplay(self):
@@ -98,9 +93,3 @@ class PowerMeterGUI(GUIBase):
             y = np.asarray(self.powerOutputArr),
             x = np.arange(0, self.timePass)
             )
-
-    def startGUI(self):
-        self.sigStartPM.emit()
-
-    def stopGUI(self):
-        self.sigStopPM.emit()
