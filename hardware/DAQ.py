@@ -99,6 +99,8 @@ class DAQ(Base):
             return
         else:
             differential_voltage = voltage * 1/2
+            print("BOARD NUM")
+            print(self.board_num)
             voltValHigh=ul.from_eng_units(self.board_num, self.range, differential_voltage)
             voltValLow=ul.from_eng_units(self.board_num, self.range, -1 * differential_voltage)
             value_high = ul.a_out(self.board_num, channel_high, self.range,voltValHigh)
@@ -129,7 +131,7 @@ class DAQ(Base):
         '''
         for i in range(4):
             self.setVoltage(i,0)
-        ul.release_daq_device(self.board_num)
+        #ul.release_daq_device(self.board_num)
         return
 
 

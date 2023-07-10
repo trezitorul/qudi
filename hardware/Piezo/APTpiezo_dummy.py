@@ -18,11 +18,11 @@
 
 from core.module import Base
 from core.configoption import ConfigOption
-from interface.APTpiezo_interface import APTpiezoInterface
+from interface.confocal_devices_interface import ConfocalDevInterface
 
 
 
-class APTDevice_Piezo_Dummy(Base, APTpiezoInterface):
+class APTDevice_Piezo_Dummy(Base, ConfocalDevInterface):
     """
     Initialise and open serial device for the ThorLabs APT controller.
 

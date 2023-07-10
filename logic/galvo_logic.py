@@ -218,3 +218,6 @@ class GalvoLogic(GenericLogic):
         Reset Galvo config
         '''
         self._daq.setZero()
+
+    def get_position_range(self): ###################### F I X ##################################################
+        return [[-10,10], [-10,10]]
