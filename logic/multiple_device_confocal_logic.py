@@ -13,8 +13,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
     galvo = Connector(interface='GalvoLogic')
     piezo = Connector(interface='ConfocalDevInterface')
     counter = Connector(interface='DAQ')
-    # counter = Connector(interface='DaqCounter')
-
+    mirrors = Connector(interface='FlipperMirrorLogic')
 
     # config
     _clock_frequency = ConfigOption('clock_frequency', 100, missing='warn')
@@ -32,6 +31,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
         self._galvo = self.galvo()
         self._piezo = self.piezo()
         self._counter = self.counter()
+        self._mirrors = self.mirrors()
 
         self._line_length = None
         self._num_points = 500
@@ -50,8 +50,10 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         @return int: error code (0:OK, -1:error)
         """
-        self._piezo.set_position(position=0)
+        # self._piezo.set_position(position=0)
         self._counter.setZero()
+        self._mirrors.set_mode('on', 1)
+        self._mirrors.set_mode('on', 2)
 
         return 0
 
@@ -113,7 +115,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         Most methods calling this might just care about the number of channels.
         """
-        return [1]
+        return [1, 2]
 
     def set_up_scanner_clock(self, clock_frequency=None, clock_channel=None):
         """ Configures the hardware clock of the hardware that controls the acquisition timing.
@@ -150,6 +152,8 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         TODO: Again, should the multiple clocks controlled by logic be in this interface ?
         """
+        self._mirrors.set_mode('off', 1)
+        self._mirrors.set_mode('off', 2)
         return 0
 
     def scanner_set_position(self, x=None, y=None, z=None, a=None):
@@ -189,17 +193,20 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         @return float[k][m]: the photon counts per second for k pixels with m channels
         """
-        result = [[0 for y in range(1)] for x in range(len(line_path[0]))]
+        result = [[0 for y in range(2)] for x in range(len(line_path[0]))]
         # print(np.shape(line_path))
         # print(np.shape(result))
 
         for k in range(len(line_path[0])):
-            count = 0
+            count1 = 0
+            count2 = 0
             self.scanner_set_position(x=line_path[0][k], y=line_path[1][k], z=line_path[2][k])
-            count += self._counter.getCounts(dt=0.001, counterchannel=0)
-            for m in range(1):
-                result[k][m] = count
-        return result
+            count1 += self._counter.getCounts(dt=1/self._clock_frequency, counterchannel=0)
+            count2 += self._counter.getCounts(dt=1/self._clock_frequency, counterchannel=1)
+            result[k][0] = count1
+            result[k][1] = count2
+        
+        return np.array(result)
 
 
     def _set_up_line(self, length=100):
@@ -232,7 +239,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         TODO: Give a detail explanation how it is used in practice and why it is necessary.
         """
-        pass
+        return 0
 
 ############################################################################
 #                                                                          #

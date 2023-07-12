@@ -279,7 +279,6 @@ class APTDevice_Piezo(APTDevice):
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
         max = self.info[channel]["maxTravel"]
-
         if (position == None):
             raise ValueError("MISSING INPUT FOR POSITION")
 

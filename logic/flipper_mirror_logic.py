@@ -34,7 +34,7 @@ class FlipperMirrorLogic(GenericLogic):
 
     flipper1 = Connector(interface='FlipperMirror')
     flipper2 = Connector(interface='FlipperMirror')
-    
+
     # signals
     sigUpdatePMDisplay = QtCore.Signal()
 

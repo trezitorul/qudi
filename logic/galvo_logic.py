@@ -85,10 +85,9 @@ class GalvoLogic(GenericLogic):
         qi = self.queryInterval
         try:
             self.position = self.getPosition()
-
         except:
             qi = 3000
-            self.log.exception("Exception in piezo status loop, throttling refresh rate.")
+            self.log.exception("Exception in galvo status loop, throttling refresh rate.")
 
         self.queryTimer.start(qi)
         self.sigUpdateDisplay.emit()

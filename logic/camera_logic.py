@@ -42,6 +42,7 @@ class CameraLogic(GenericLogic):
     # declare connectors
     hardware = Connector(interface='CameraInterface')
     savelogic = Connector(interface='SaveLogic')
+    fliplogic = Connector(interface='FlipperMirrorLogic')
     _max_fps = ConfigOption('default_exposure', 20)
     _fps = _max_fps
 
@@ -67,6 +68,7 @@ class CameraLogic(GenericLogic):
         """
         self._hardware = self.hardware()
         self._save_logic = self.savelogic()
+        self._fliplogic = self.fliplogic()
 
         self.enabled = False
 
@@ -112,6 +114,8 @@ class CameraLogic(GenericLogic):
     def start_loop(self):
         """ Start the data recording loop.
         """
+        self._fliplogic.set_mode('on', 1)
+        self._fliplogic.set_mode('on', 2)
         self.enabled = True
         self.timer.start(1000*1/self._fps)
 

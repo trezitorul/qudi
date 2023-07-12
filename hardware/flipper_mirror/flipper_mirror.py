@@ -58,7 +58,7 @@ class FlipperMirror(Base):
 
         # Reset the flipper
         self.HomeMirror()
-        self.SetMode("on")
+        # self.SetMode("on")
         pass
     
     def on_deactivate(self):

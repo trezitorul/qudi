@@ -70,8 +70,11 @@ class LtuneLaserGUI(GUIBase):
         self._pw = self._mw.powerTrace
 
         # Connect buttons to functions
+        self._mw.powerInput.setMaximum(1000)
         self._mw.powerInput.valueChanged.connect(self.setPower)
         self._mw.switchLaser.clicked.connect(self.updateButton)
+        
+        self.power = 0
 
         # Connect update signal
         # self._ltunelaserlogic.sigUpdateLaserDisplay.connect(self.updateDisplay)
