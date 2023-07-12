@@ -168,7 +168,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         If a value is not set or set to None, the actual value is implied.
         """
-        self._galvo.setPosition((x, y))
+        self._galvo.setPositionScaled((x, y))
         self._piezo.set_position(position=z)
         return 0
 

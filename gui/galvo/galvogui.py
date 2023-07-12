@@ -39,7 +39,7 @@ class GalvoGUI(GUIBase):
         self._mw = GalvoMainWindow()
 
         # Set default parameters
-        self._mw.GalvoStepSize.setValue(1)
+        self._mw.GalvoStepSize.setValue(.01)
         self.galvoPosition = [0, 0]
 
         # Connect buttons to functions
@@ -54,9 +54,7 @@ class GalvoGUI(GUIBase):
         # Connect signals
         self._galvologic.sigUpdateDisplay.connect(self.updateGalvoDisplay)
 
-        self.setScale()
-
-        self.galvoStepSize = self.scaleX
+        self.galvoStepSize = .01
 
         self.show()
 
@@ -66,19 +64,6 @@ class GalvoGUI(GUIBase):
         @return int: error code (0:OK, -1:error)
         """
         self._mw.close()
-
-    def setScale(self):
-        self._galvologic.setPosition([1,1])
-        time.sleep(.1)
-        voltage = self._galvologic.getPosition()
-        self.scaleX = 1 / voltage[0]
-        self.scaleY = 1 / voltage[1]
-        print("X")
-        print(self.scaleX)
-        print("Y")
-        print(self.scaleY)
-        self._galvologic.setPosition([0,0])
-
         
     def moveGalvo(self, axis, direction):
         """Move galvo
@@ -87,18 +72,10 @@ class GalvoGUI(GUIBase):
             axis (int): 0->x, 1->y
             direction (int, optional): Step direction. Defaults to 1.
         """
-        galvoPosition = self._galvologic.position
-        galvoPosition = [galvoPosition[0]*self.scaleX, galvoPosition[1]*self.scaleY]
-        print("CURRENT POSITION")
-        print(galvoPosition)
-        print("REQUESTED POSITION")
-
-        galvoPosition[axis] = galvoPosition[axis] + self.galvoStepSize * direction
-        print(galvoPosition)
-        self._galvologic.setPosition(galvoPosition)
+        self._galvologic.moveGalvo(axis, direction, self.galvoStepSize)
 
     def galvoStepChanged(self):
-        self.galvoStepSize = self._mw.GalvoStepSize.value()*self.scaleX
+        self.galvoStepSize = self._mw.GalvoStepSize.value()
 
     def updateGalvoDisplay(self):
         self.galvoPosition = self._galvologic.position
