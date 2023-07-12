@@ -36,7 +36,9 @@ class GalvoLogic(GenericLogic):
         self.thetaLow=1
         self.phiHigh=2
         self.phiLow=3
-        self.VToA=10 #Volts per Optical Scan Angle (1/2 * 0.5 V per Mechanical Angle, Optical Scan Angle is 2X Mechanical Scan Angle)
+        self.VToA=0.5 #Volts per Optical Scan Angle (1/2 * 1 V per Mechanical Angle, Optical Scan Angle is 2X Mechanical Scan Angle)
+        self.Sx=10
+        self.Sy=10
         self.projectionDistance=10.63*self.um #1/tan(31) used for development only, corresponds to max displacement of the X axis at theta=31 degrees. Units can be chosen arbitrarily for now as um=1
 
         self.stopRequest = False
@@ -95,16 +97,18 @@ class GalvoLogic(GenericLogic):
         self.sigUpdateDisplay.emit()
 
     def setScale(self):
-        self.setPosition([.1,.1])
+        self.setDiffVoltage(self.thetaHigh, self.thetaLow, 5)
+        self.setDiffVoltage(self.phiHigh, self.phiLow, 5)
         time.sleep(.1)
-        position = self.getPosition()
+        measuredVoltageX = self.getDiffVoltage(self.thetaHigh, self.thetaLow)
+        measuredVoltageY = self.getDiffVoltage(self.phiHigh, self.phiLow)
         self.scale =[0,0]
-        self.scale[0] = .1 / position[0]
-        self.scale[1] = .1 / position[1]
+        self.Sx = 5 / measuredVoltageX
+        self.Sy = 5 / measuredVoltageY
         print("Galvo X Scale")
-        print(self.scale[0])
+        print(self.Sx)
         print("Galvo Y Scale")
-        print(self.scale[1])
+        print(self.Sy)
         self.setPosition([0,0])
 
     def setPosition(self, position):
@@ -121,9 +125,8 @@ class GalvoLogic(GenericLogic):
 
     def moveGalvo(self, axis, direction, galvoStepSize):
         galvoPosition = self.getPosition()
-        galvoPosition = [galvoPosition[0]*self.scale[0], galvoPosition[1]*self.scale[1]]
 
-        galvoPosition[axis] = galvoPosition[axis] + galvoStepSize*self.scale[axis] * direction
+        galvoPosition[axis] = galvoPosition[axis] + galvoStepSize * direction
         self.setX(galvoPosition[0])
         self.setY(galvoPosition[1])
 
@@ -138,7 +141,7 @@ class GalvoLogic(GenericLogic):
         '''
         Set optical angle in respect to X axis
         '''
-        V_theta=self.VToA*theta
+        V_theta=self.Sx*self.VToA*theta
         self.setDiffVoltage(self.thetaHigh,self.thetaLow, V_theta)
         return 
 
@@ -146,7 +149,7 @@ class GalvoLogic(GenericLogic):
         '''
         Set optical angle in respect to Y axis
         '''
-        V_phi=self.VToA*phi
+        V_phi=self.Sy*self.VToA*phi
         self.setDiffVoltage(self.phiHigh,self.phiLow, V_phi)
         return 
 
@@ -171,7 +174,7 @@ class GalvoLogic(GenericLogic):
         Return optical angle in respect to X axis
         '''
         Xvolt = self.getDiffVoltage(self.thetaHigh,self.thetaLow)
-        theta = Xvolt / self.VToA
+        theta = Xvolt / (self.VToA*self.Sx)
         return theta
     
     def getX(self):
@@ -187,7 +190,7 @@ class GalvoLogic(GenericLogic):
         Return optical angle in respect to Y axis
         '''
         Yvolt = self.getDiffVoltage(self.phiHigh,self.phiLow)
-        phi = Yvolt / self.VToA
+        phi = Yvolt / (self.VToA*self.Sy)
         return phi
     
     def getY(self):
