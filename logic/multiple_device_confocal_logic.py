@@ -9,6 +9,8 @@ from interface.confocal_scanner_interface import ConfocalScannerInterface
 
 class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
     # connectors
+    m=1
+    um=1e-6*m
     fitlogic = Connector(interface='FitLogic') 
     galvo = Connector(interface='GalvoLogic')
     piezo = Connector(interface='ConfocalDevInterface')
@@ -66,6 +68,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
         """
         xy=self._galvo.get_position_range() ##################################################### F I X ######################################################### FIX
         z = [0, self._piezo.get_max_travel()]
+        # z = [0, self._piezo.get_max_travel()*self.um] (DO NOT use this, it will break the gui)
 
         return [xy[0], xy[1], z]
 
@@ -168,7 +171,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         If a value is not set or set to None, the actual value is implied.
         """
-        self._galvo.setPositionScaled((x, y))
+        self._galvo.setPosition((x, y))
         self._piezo.set_position(position=z)
         return 0
 
