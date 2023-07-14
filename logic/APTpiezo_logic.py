@@ -37,6 +37,8 @@ class APTpiezoLogic(GenericLogic):
     queryInterval = ConfigOption('query_interval', 100)
 
     position = [0,0,0]
+    m=1
+    um= m*1e-6
 
     # signals
     sigUpdateDisplay = QtCore.Signal()

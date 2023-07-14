@@ -39,7 +39,7 @@ class GalvoLogic(GenericLogic):
         self.VToA=0.5 #Volts per Optical Scan Angle (1/2 * 1 V per Mechanical Angle, Optical Scan Angle is 2X Mechanical Scan Angle)
         self.Sx=10
         self.Sy=10
-        self.projectionDistance=0.1063*self.m #1/tan(31) used for development only, corresponds to max displacement of the X axis at theta=31 degrees. Units can be chosen arbitrarily for now as um=1
+        self.projectionDistance=(229)*self.um #1/tan(31) used for development only, corresponds to max displacement of the X axis at theta=31 degrees. Units can be chosen arbitrarily for now as um=1
 
         self.stopRequest = False
         self.bufferLength = 100
@@ -51,6 +51,7 @@ class GalvoLogic(GenericLogic):
         self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
 
         self.setScale()
+        self.set_position_range()
         self.start_query_loop()
 
 
@@ -112,8 +113,11 @@ class GalvoLogic(GenericLogic):
         self.setPosition([0,0])
 
     def setPosition(self, position):
-        self.setX(position[0]*self.um*self.Sx)
-        self.setY(position[1]*self.um*self.Sy)
+        """
+        position in micrometers. does conversion in function
+        """
+        self.setX(position[0]*self.Sx*self.um)
+        self.setY(position[1]*self.Sy*self.um)
         # self.setDiffVoltage(0,1,position[0])
         # self.setDiffVoltage(2,3,position[1])
 
@@ -123,6 +127,9 @@ class GalvoLogic(GenericLogic):
         self.setDiffVoltage(2,3,galvoPosition[1])
 
     def moveGalvoPos(self, axis, direction, galvoStepSize):
+        """
+        pos is in meters
+        """
         pos = self.getPosition()
         galvoPosition = [pos[0]/self.um, pos[1]/self.um]
 
@@ -147,7 +154,7 @@ class GalvoLogic(GenericLogic):
         '''
         Set optical angle in respect to X axis
         '''
-        V_theta=self.Sx*self.VToA*theta
+        V_theta=theta/(self.Sx*self.VToA)
         self.setDiffVoltage(self.thetaHigh,self.thetaLow, V_theta)
         return 
 
@@ -155,7 +162,7 @@ class GalvoLogic(GenericLogic):
         '''
         Set optical angle in respect to Y axis
         '''
-        V_phi=self.Sy*self.VToA*phi
+        V_phi=phi/(self.Sy*self.VToA)
         self.setDiffVoltage(self.phiHigh,self.phiLow, V_phi)
         return 
 
@@ -180,7 +187,7 @@ class GalvoLogic(GenericLogic):
         Return optical angle in respect to X axis
         '''
         Xvolt = self.getDiffVoltage(self.thetaHigh,self.thetaLow)
-        theta = Xvolt / (self.VToA*self.Sx)
+        theta = Xvolt * self.VToA*self.Sx
         return theta
     
     def getX(self):
@@ -196,7 +203,7 @@ class GalvoLogic(GenericLogic):
         Return optical angle in respect to Y axis
         '''
         Yvolt = self.getDiffVoltage(self.phiHigh,self.phiLow)
-        phi = Yvolt / (self.VToA*self.Sy)
+        phi = Yvolt * self.VToA*self.Sy
         return phi
     
     def getY(self):
@@ -313,7 +320,7 @@ class GalvoLogic(GenericLogic):
     #     '''
     #     self._daq.setZero()
 
-    def get_position_range(self): ###################### F I X ##################################################
+    def set_position_range(self): 
 
         self.setDiffVoltage(self.thetaHigh, self.thetaLow, 20)
         self.setDiffVoltage(self.phiHigh, self.phiLow, 20)
@@ -321,10 +328,13 @@ class GalvoLogic(GenericLogic):
         measuredMaxVoltageX = self.getDiffVoltage(self.thetaHigh, self.thetaLow)
         measuredMaxVoltageY = self.getDiffVoltage(self.phiHigh, self.phiLow)
         phi = measuredMaxVoltageX / (self.VToA)
-        maxY=math.tan(math.radians(phi)) * self.projectionDistance * self.Sx
+        maxY=math.tan(math.radians(phi)) * self.projectionDistance
         theta = measuredMaxVoltageY / (self.VToA)
         maxX=math.tan(math.radians(theta)) * self.projectionDistance
         # print("GALVO MAX TRAVEL")
-        # print([[-maxX, maxX], [maxY,-maxY]])
-        # return [[-maxX, maxX], [-maxY,maxY]]
-        return [[-333,333],[-333,333]]
+        # print([[-maxX, maxX], [-maxY,maxY]])
+        self.posRange = [[-maxX, maxX], [-maxY,maxY]]
+
+    def get_position_range(self): 
+
+        return self.posRange

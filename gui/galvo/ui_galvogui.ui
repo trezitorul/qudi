@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>592</width>
+    <width>569</width>
     <height>384</height>
    </rect>
   </property>
@@ -53,7 +53,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Position: ~-333 to 333</string>
+             <string>Position</string>
             </property>
            </widget>
           </item>
@@ -155,7 +155,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Diff Voltage: -1 to 1</string>
+             <string>Diff Voltage</string>
             </property>
            </widget>
           </item>
@@ -426,14 +426,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="xInput">
-            <property name="minimum">
-             <double>-400.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>400.000000000000000</double>
-            </property>
-           </widget>
+           <widget class="QDoubleSpinBox" name="xInput"/>
           </item>
          </layout>
         </item>
@@ -452,14 +445,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="yInput">
-            <property name="minimum">
-             <double>-400.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>400.000000000000000</double>
-            </property>
-           </widget>
+           <widget class="QDoubleSpinBox" name="yInput"/>
           </item>
          </layout>
         </item>
@@ -474,7 +460,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>592</width>
+     <width>569</width>
      <height>21</height>
     </rect>
    </property>

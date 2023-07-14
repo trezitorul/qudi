@@ -67,8 +67,8 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         """
         xy=self._galvo.get_position_range() ##################################################### F I X ######################################################### FIX
-        z = [0, self._piezo.get_max_travel()]
-        # z = [0, self._piezo.get_max_travel()*self.um] (DO NOT use this, it will break the gui)
+        # z = [0, self._piezo.get_max_travel()]
+        z = [0, self._piezo.get_max_travel()*self.um]
 
         return [xy[0], xy[1], z]
 
@@ -171,8 +171,8 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         If a value is not set or set to None, the actual value is implied.
         """
-        self._galvo.setPosition((x, y))
-        self._piezo.set_position(position=z)
+        self._galvo.setPosition((x/self.um, y/self.um))
+        self._piezo.set_position(position=z/self.um)
         return 0
 
 
@@ -183,7 +183,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
         """
         xy = self._galvo.getPosition()
         z = self._piezo.get_position()
-        return [xy[0], xy[1], z]
+        return [xy[0], xy[1], z*self.um]
 
 
     def scan_line(self, line_path=None, pixel_clock=False):

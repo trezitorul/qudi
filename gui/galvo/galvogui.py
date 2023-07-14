@@ -89,6 +89,8 @@ class GalvoGUI(GUIBase):
         position = [self._mw.xInput.value(), self._mw.yInput.value()]
 
         if (self.isPosMode):
+            position[0] = position[0]
+            position[1] = position[1]
             self._galvologic.setPosition(position)
         else:
             # self._galvologic.setDiffVoltage(0,1,position[0])
