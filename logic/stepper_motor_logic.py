@@ -26,13 +26,17 @@ from core.connector import Connector
 from core.configoption import ConfigOption
 from logic.generic_logic import GenericLogic
 from qtpy import QtCore
+import pyfirmata
 
 
 class StepperMotorLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
-    stepperMotor = Connector(interface='StepperMotor')
+    stepperMotor1 = Connector(interface='StepperMotor')
+    stepperMotor2 = Connector(interface='StepperMotor')
+    com_port = ConfigOption(name='com_port', missing='error')
+    queryInterval = ConfigOption('query_interval', 100)
 
     # signals
     sigUpdateDisplay = QtCore.Signal()
@@ -40,9 +44,15 @@ class StepperMotorLogic(GenericLogic):
     def on_activate(self):
         """ Prepare logic module for work.
         """
-        self._stepperMotor = self.stepperMotor()
+        self.board = pyfirmata.Arduino(self.com_port)
+        self._stepperMotor1 = self.stepperMotor1()
+        self._stepperMotor2 = self.stepperMotor2()
 
-        self.position = 0
+        self._stepperMotor1.initialize(self.board)
+        self._stepperMotor2.initialize(self.board)
+        self.stopRequest = False
+        self.position = (0, 0)
+        self.rpm = 12
 
         # delay timer for querying hardware
         self.queryTimer = QtCore.QTimer()
@@ -106,11 +116,13 @@ class StepperMotorLogic(GenericLogic):
         self._stepperMotor.move_abs(revolution)
 
     
-    def move_rel(self, direction, step=1):
-        self._stepperMotor.move_rel(direction, step)
+    def move_rel(self, axis, direction, step=1):
+        if (axis == 0): self._stepperMotor1.move_rel(direction, step)
+        if (axis == 1): self._stepperMotor2.move_rel(direction, step)
 
 
-    def getPosition(self , bay=0, channel=0, timeout=10):
+
+    def getPosition(self):
         """
         Get position of the piezo as an integer in the range from 0 to 32767, correspond 
         to 0-100% of piezo extension aka maxTravel.
@@ -120,5 +132,12 @@ class StepperMotorLogic(GenericLogic):
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
 
-        position = self._stepperMotor.get_pos()
-        return position
+        positionX = self._stepperMotor1.get_pos()
+        positionY = self._stepperMotor2.get_pos()
+        return (positionX, positionY)
+    
+
+    def setRPM(self, rpm):
+        self._stepperMotor1.set_rpm(rpm)
+        self._stepperMotor2.set_rpm(rpm)
+        self.rpm = rpm
