@@ -71,6 +71,7 @@ class DAQ(Base):
         '''
         value_in = ul.a_in(self.board_num, channel_in, self.range)
         voltage = ul.to_eng_units(self.board_num, self.range, value_in)
+
         return voltage
     
 
@@ -83,7 +84,6 @@ class DAQ(Base):
             print("invalid voltage on" + str(channel_out)+" of " + str(voltage) + "please reenter correct voltage")
             return
         else:
-            # print(voltage)
             voltVal=ul.from_eng_units(self.board_num, self.range, voltage)
             value_out = ul.a_out(self.board_num, channel_out, self.range,voltVal)
             return
@@ -93,6 +93,8 @@ class DAQ(Base):
         '''
         Set the analog output differential voltage between 2 channel
         '''
+        #print("VOLTAGE REQUESTED")
+        #print(voltage)
         voltage_pk = 20
         if abs(voltage) > abs(voltage_pk):
             print("invalid voltage please reenter correct voltage")
@@ -101,8 +103,8 @@ class DAQ(Base):
             differential_voltage = voltage * 1/2
             voltValHigh=ul.from_eng_units(self.board_num, self.range, differential_voltage)
             voltValLow=ul.from_eng_units(self.board_num, self.range, -1 * differential_voltage)
-            value_high = ul.a_out(self.board_num, channel_high, self.range,voltValHigh)
-            value_low = ul.a_out(self.board_num, channel_low, self.range,voltValLow)
+            ul.a_out(self.board_num, channel_high, self.range,voltValHigh)
+            ul.a_out(self.board_num, channel_low, self.range,voltValLow)
             return 
 
 
@@ -112,7 +114,8 @@ class DAQ(Base):
         '''
         mode = self.mode
         if mode == "single_ended":
-            return self.getVoltage(channel_high) - self.getVoltage(channel_low)
+            diffVoltage = self.getVoltage(channel_high) - self.getVoltage(channel_low)
+            return diffVoltage
         elif mode == "differential": 
             if channel_low == channel_high + 1 and channel_high % 2 == 0:
                 return self.getVoltage(channel_high // 2)
@@ -122,14 +125,14 @@ class DAQ(Base):
         else:
             print("please use correct mode, single_ended or differential")
             return "null"
-
+        
     def setZero(self):
         '''
         Reset Galvo config
         '''
         for i in range(4):
             self.setVoltage(i,0)
-        ul.release_daq_device(self.board_num)
+        #ul.release_daq_device(self.board_num)
         return
 
 

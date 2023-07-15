@@ -27,16 +27,19 @@ class GalvoLogic(GenericLogic):
         """
 
         self._daq = self.daq()
-
-        self.um=1
+        self.m=1
+        self.um=self.m*1e-6
+        # self.um=1
         self.nm=(self.um/1000)
         
         self.thetaHigh=0
         self.thetaLow=1
         self.phiHigh=2
         self.phiLow=3
-        self.VToA=10 #Volts per Optical Scan Angle (1/2 * 0.5 V per Mechanical Angle, Optical Scan Angle is 2X Mechanical Scan Angle)
-        self.projectionDistance=10.63*self.um #1/tan(31) used for development only, corresponds to max displacement of the X axis at theta=31 degrees. Units can be chosen arbitrarily for now as um=1
+        self.VToA=0.5 #Volts per Optical Scan Angle (1/2 * 1 V per Mechanical Angle, Optical Scan Angle is 2X Mechanical Scan Angle)
+        self.Sx=10
+        self.Sy=10
+        self.projectionDistance=(229)*self.um #1/tan(31) used for development only, corresponds to max displacement of the X axis at theta=31 degrees. Units can be chosen arbitrarily for now as um=1
 
         self.stopRequest = False
         self.bufferLength = 100
@@ -47,6 +50,8 @@ class GalvoLogic(GenericLogic):
         self.queryTimer.setSingleShot(True)
         self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
 
+        self.setScale()
+        self.set_position_range()
         self.start_query_loop()
 
 
@@ -85,33 +90,129 @@ class GalvoLogic(GenericLogic):
         qi = self.queryInterval
         try:
             self.position = self.getPosition()
-
+            self.diffvolt = [self.getDiffVoltage(0,1), self.getDiffVoltage(2,3)]
         except:
             qi = 3000
-            self.log.exception("Exception in piezo status loop, throttling refresh rate.")
+            self.log.exception("Exception in galvo status loop, throttling refresh rate.")
 
         self.queryTimer.start(qi)
         self.sigUpdateDisplay.emit()
 
-    def setPosition(self, voltage):
+    def setScale(self):
+        self.setDiffVoltage(self.thetaHigh, self.thetaLow, 5)
+        self.setDiffVoltage(self.phiHigh, self.phiLow, 5)
+        time.sleep(.1)
+        measuredVoltageX = self.getDiffVoltage(self.thetaHigh, self.thetaLow)
+        measuredVoltageY = self.getDiffVoltage(self.phiHigh, self.phiLow)
+        self.Sx = 5 / measuredVoltageX
+        self.Sy = 5 / measuredVoltageY
+        print("Galvo X Scale")
+        print(self.Sx)
+        print("Galvo Y Scale")
+        print(self.Sy)
+        self.setPosition([0,0])
 
-        # self.setX(position[0])
-        # self.setY(position[1])
-        self.setDiffVoltage(0,1,voltage[0])
-        self.setDiffVoltage(2,3,voltage[1])
+    def setPosition(self, position):
+        """
+        position in micrometers. does conversion in function
+        """
+        self.setX(position[0]*self.Sx*self.um)
+        self.setY(position[1]*self.Sy*self.um)
+        # self.setDiffVoltage(0,1,position[0])
+        # self.setDiffVoltage(2,3,position[1])
+
+    def setVoltageScaled(self, voltage):
+        galvoPosition = [voltage[0]*self.Sx, voltage[1]*self.Sy]
+        self.setDiffVoltage(0,1,galvoPosition[0])
+        self.setDiffVoltage(2,3,galvoPosition[1])
+
+    def moveGalvoPos(self, axis, direction, galvoStepSize):
+        """
+        pos is in meters
+        """
+        pos = self.getPosition()
+        galvoPosition = [pos[0]/self.um, pos[1]/self.um]
+
+        galvoPosition[axis] = galvoPosition[axis] + galvoStepSize * direction
+        self.setPosition([galvoPosition[0], galvoPosition[1]])
+
+    def moveGalvoVolt(self, axis, direction, galvoStepSize):
+        galvoPosition = [self.getDiffVoltage(0,1), self.getDiffVoltage(2,3)]
+
+        galvoPosition[axis] = galvoPosition[axis] + galvoStepSize * direction
+        self.setDiffVoltage(0,1,galvoPosition[0] * self.Sx)
+        self.setDiffVoltage(2,3,galvoPosition[1] * self.Sy)
 
     def getPosition(self):
-        """
-        Get position of the piezo as an integer in the range from 0 to 32767, correspond 
-        to 0-100% of piezo extension aka maxTravel.
-        Units: microns
 
-        :param bay: Index (0-based) of controller bay to send the command.
-        :param channel: Index (0-based) of controller bay channel to send the command.
-        """
-
-        position = [self.getDiffVoltage(0,1), self.getDiffVoltage(2,3)]
+        # position = [self.getDiffVoltage(0,1), self.getDiffVoltage(2,3)]
+        position = [self.getX(), self.getY()]
+        
         return position
+    
+    def setThetaAngle(self, theta):
+        '''
+        Set optical angle in respect to X axis
+        '''
+        V_theta=theta/(self.Sx*self.VToA)
+        self.setDiffVoltage(self.thetaHigh,self.thetaLow, V_theta)
+        return 
+
+    def setPhiAngle(self, phi):
+        '''
+        Set optical angle in respect to Y axis
+        '''
+        V_phi=phi/(self.Sy*self.VToA)
+        self.setDiffVoltage(self.phiHigh,self.phiLow, V_phi)
+        return 
+
+    def setX(self, X):
+        '''
+        Set horizontal positon of laser
+        '''
+        theta=math.degrees(np.arctan(X/self.projectionDistance))
+        self.setThetaAngle(theta)
+        return
+    
+    def setY(self, Y):
+        '''
+        Set vertical position of laser
+        '''
+        phi=math.degrees(np.arctan(Y/self.projectionDistance))
+        self.setPhiAngle(phi)
+        return
+    
+    def getThetaAngle(self):
+        '''
+        Return optical angle in respect to X axis
+        '''
+        Xvolt = self.getDiffVoltage(self.thetaHigh,self.thetaLow)
+        theta = Xvolt * self.VToA*self.Sx
+        return theta
+    
+    def getX(self):
+        '''
+        Return horizontal positon of laser
+        '''
+        theta = self.getThetaAngle()
+        X_position = math.tan(math.radians(theta)) * self.projectionDistance
+        return X_position
+    
+    def getPhiAngle(self):
+        '''
+        Return optical angle in respect to Y axis
+        '''
+        Yvolt = self.getDiffVoltage(self.phiHigh,self.phiLow)
+        phi = Yvolt * self.VToA*self.Sy
+        return phi
+    
+    def getY(self):
+        '''
+        Return vertical position of laser
+        '''
+        phi = self.getPhiAngle()
+        Y_position = math.tan(math.radians(phi)) * self.projectionDistance
+        return Y_position
     
     def setMode(self,mode):
         '''
@@ -143,78 +244,22 @@ class GalvoLogic(GenericLogic):
         Return differential voltage between 2 channels
         '''
         return self._daq.getDiffVoltage(channel_high,channel_low)
-    
-    def setThetaAngle(self, theta):
-        '''
-        Set optical angle in respect to X axis
-        '''
-        V_theta=self.VToA*theta
-        self.setDiffVoltage(self.thetaHigh,self.thetaLow, V_theta)
-        return 
 
-    def setPhiAngle(self, phi):
-        '''
-        Set optical angle in respect to Y axis
-        '''
-        V_phi=self.VToA*phi
-        self.setDiffVoltage(self.phiHigh,self.phiLow, V_phi)
-        return 
+    def set_position_range(self): 
 
-    def setX(self, X):
-        '''
-        Set horizontal positon of laser
-        '''
-        theta=math.degrees(np.arctan(X/self.projectionDistance))
-        self.setThetaAngle(theta)
-        return
+        self.setDiffVoltage(self.thetaHigh, self.thetaLow, 20)
+        self.setDiffVoltage(self.phiHigh, self.phiLow, 20)
+        time.sleep(.1)
+        measuredMaxVoltageX = self.getDiffVoltage(self.thetaHigh, self.thetaLow)
+        measuredMaxVoltageY = self.getDiffVoltage(self.phiHigh, self.phiLow)
+        phi = measuredMaxVoltageX / (self.VToA)
+        maxY=math.tan(math.radians(phi)) * self.projectionDistance
+        theta = measuredMaxVoltageY / (self.VToA)
+        maxX=math.tan(math.radians(theta)) * self.projectionDistance
+        # print("GALVO MAX TRAVEL")
+        # print([[-maxX, maxX], [-maxY,maxY]])
+        self.posRange = [[-maxX, maxX], [-maxY,maxY]]
 
-    def setY(self, Y):
-        '''
-        Set vertical position of laser
-        '''
-        phi=math.degrees(np.arctan(Y/self.projectionDistance))
-        self.setPhiAngle(phi)
-        return
+    def get_position_range(self): 
 
-
-    def getThetaAngle(self):
-        '''
-        Return optical angle in respect to X axis
-        '''
-        Xvolt = self.getDiffVoltage(self.thetaHigh,self.thetaLow)
-        theta = Xvolt / self.VToA
-        return theta
-
-
-    def getX(self):
-        '''
-        Return horizontal positon of laser
-        '''
-        theta = self.getThetaAngle()
-        X_position = math.tan(math.radians(theta)) * self.projectionDistance
-        return X_position
-
-
-    def getPhiAngle(self):
-        '''
-        Return optical angle in respect to Y axis
-        '''
-        Yvolt = self.getDiffVoltage(self.phiHigh,self.phiLow)
-        phi = Yvolt / self.VToA
-        return phi
-
-
-    def getY(self):
-        '''
-        Return vertical position of laser
-        '''
-        phi = self.getPhiAngle()
-        Y_position = math.tan(math.radians(phi)) * self.projectionDistance
-        return Y_position
-
-
-    def setZero(self):
-        '''
-        Reset Galvo config
-        '''
-        self._daq.setZero()
+        return self.posRange

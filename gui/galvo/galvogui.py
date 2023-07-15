@@ -1,4 +1,5 @@
 import os
+import time
 
 from gui.guibase import GUIBase
 from core.connector import Connector
@@ -40,13 +41,22 @@ class GalvoGUI(GUIBase):
         # Set default parameters
         self._mw.GalvoStepSize.setValue(10)
         self.galvoPosition = [0, 0]
+        self._mw.posButton.setChecked(True)
         self.galvoStepSize = 10
+        self.isPosMode = True
+
+        # Units
+        self.m=1
+        self.um=self.m*1e-6
 
         # Connect buttons to functions
         self._mw.galvoUpButton.clicked.connect(lambda: self.moveGalvo(1,1))
         self._mw.galvoDownButton.clicked.connect(lambda: self.moveGalvo(1,-1))
         self._mw.galvoLeftButton.clicked.connect(lambda: self.moveGalvo(0,-1))
-        self._mw.galvoDownButton.clicked.connect(lambda: self.moveGalvo(0,1))
+        self._mw.galvoRightButton.clicked.connect(lambda: self.moveGalvo(0,1))
+        self._mw.posButton.clicked.connect(self.setPosMode)
+        self._mw.voltButton.clicked.connect(self.setVoltMode)
+        self._mw.moveButton.clicked.connect(self.manualMove)
 
         # Connect spinbox
         self._mw.GalvoStepSize.valueChanged.connect(self.galvoStepChanged)
@@ -70,19 +80,39 @@ class GalvoGUI(GUIBase):
             axis (int): 0->x, 1->y
             direction (int, optional): Step direction. Defaults to 1.
         """
+        if self.isPosMode:
+            self._galvologic.moveGalvoPos(axis, direction, self.galvoStepSize)
+        else:
+            self._galvologic.moveGalvoVolt(axis, direction, self.galvoStepSize)
 
-        galvoPosition = self.galvoPosition
-        galvoPosition[axis] = self.galvoPosition[axis] + self.galvoStepSize * direction
+    def manualMove(self):
+        position = [self._mw.xInput.value(), self._mw.yInput.value()]
 
-        self._galvologic.setPosition(galvoPosition)
+        if (self.isPosMode):
+            position[0] = position[0]
+            position[1] = position[1]
+            self._galvologic.setPosition(position)
+        else:
+            # self._galvologic.setDiffVoltage(0,1,position[0])
+            # self._galvologic.setDiffVoltage(2,3,position[1])
+            self._galvologic.setVoltageScaled(position)
 
     def galvoStepChanged(self):
         self.galvoStepSize = self._mw.GalvoStepSize.value()
 
     def updateGalvoDisplay(self):
         self.galvoPosition = self._galvologic.position
-        self._mw.galvoXVal.setText(str(round(self.galvoPosition[0] * 10**3,3))) #this is being multiplied because units are currently too small (idk what the units even are)
-        self._mw.galvoYVal.setText(str(round(self.galvoPosition[1] * 10**3,3)))
+        self.diffvolt = self._galvologic.diffvolt
+        self._mw.galvoXVal.setText(str(round(self.galvoPosition[0]/self.um,3)))
+        self._mw.galvoYVal.setText(str(round(self.galvoPosition[1]/self.um,3)))
+        self._mw.galvoXVolt.setText(str(round(self.diffvolt[0],3)))
+        self._mw.galvoYVolt.setText(str(round(self.diffvolt[1],3)))
+
+    def setPosMode(self):
+        self.isPosMode = True
+
+    def setVoltMode(self):
+        self.isPosMode = False
 
     def show(self):
         """Make main window visible and put it above all other windows. """

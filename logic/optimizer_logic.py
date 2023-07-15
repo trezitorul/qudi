@@ -284,9 +284,9 @@ class OptimizerLogic(GenericLogic):
         self._zimage_Z_values = np.linspace(zmin, zmax, num=self.optimizer_Z_res)
         self._fit_zimage_Z_values = np.linspace(zmin, zmax, num=self.optimizer_Z_res)
         self._zimage_A_values = np.zeros(self._zimage_Z_values.shape)
-        self.z_refocus_line = np.zeros((
-            len(self._zimage_Z_values),
-            len(self.get_scanner_count_channels())))
+        self.z_refocus_line = np.zeros(
+            (len(self._zimage_Z_values), len(self.get_scanner_count_channels()))
+            )
         self.z_fit_data = np.zeros(len(self._fit_zimage_Z_values))
 
     def _move_to_start_pos(self, start_pos):

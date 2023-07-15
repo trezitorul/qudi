@@ -5,10 +5,10 @@ import time
 
 from core.module import Base
 from core.configoption import ConfigOption
-from interface.APTpiezo_interface import APTpiezoInterface
+from interface.confocal_devices_interface import ConfocalDevInterface
 
 
-class APTPiezo(Base, APTpiezoInterface):
+class APTPiezo(Base, ConfocalDevInterface):
     """
     Initialise and open serial device for the ThorLabs APT controller.
 
@@ -100,3 +100,7 @@ class APTPiezo(Base, APTpiezoInterface):
         """
 
         return round(self.piezo.get_position(bay=bay, channel=channel), 2)
+    
+    def get_max_travel(self, channel=0):
+
+        return self.piezo.info[channel]["maxTravel"]

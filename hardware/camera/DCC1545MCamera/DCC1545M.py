@@ -101,7 +101,7 @@ class DCC1545M(Base, CameraInterface):
 
         Each pixel might be a float, integer or sub pixels
         """
-        return self.camera.acquire(5)
+        return self.camera.acquire(3)
         
 
 

@@ -39,8 +39,7 @@ class LtuneLaserLogic(GenericLogic):
 
     
     def on_deactivate(self):
-        pass
-
+        self.disable_laser()
 
     def enable_laser(self):
         self._laser.enable()
