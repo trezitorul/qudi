@@ -38,12 +38,11 @@ class USB_RelaySafetyLogic(GenericLogic, RelayLogicInterface):
 
     # signals
     sigError = QtCore.Signal()
-    sigError2 = QtCore.Signal(bool)
-    
 
     def on_activate(self):
         self._relay = self.relay()
         self._counter = self.counter()
+        self.thresh = int(self._thresh)
         
         self._counter.sigUpdateDisplay.connect(self.checkCounts)
     
@@ -66,12 +65,15 @@ class USB_RelaySafetyLogic(GenericLogic, RelayLogicInterface):
         self._relay.close()
 
     def checkCounts(self):
-        if self._counter.counts > self._thresh:
+        if self._counter.counts > self.thresh:
             self.allOff()
             self.sigError.emit()
+            self._counter.sigUpdateDisplay.disconnect(self.checkCounts)
 
-    def continueCheck(self):
-        if self._counter.counts > self._thresh:
-            self.sigError2.emit(False)
-        else:
-            self.sigError2.emit(True)
+    def getIsSafe(self):
+        isSafe = not (self._counter.counts > self.thresh)
+
+        if isSafe:
+            self._counter.sigUpdateDisplay.connect(self.checkCounts)
+
+        return isSafe

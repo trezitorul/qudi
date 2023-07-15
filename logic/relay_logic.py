@@ -32,8 +32,6 @@ class USB_RelayLogic(GenericLogic, RelayLogicInterface):
     relay = Connector(interface='USB_Relay')
 
     sigError = QtCore.Signal()
-    sigError2 = QtCore.Signal(bool)
-    
 
     def on_activate(self):
         self._relay = self.relay()
