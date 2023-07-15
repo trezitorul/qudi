@@ -28,7 +28,7 @@ from logic.generic_logic import GenericLogic
 from qtpy import QtCore
 
 
-class APTpiezoLogic(GenericLogic):
+class StepperMotorLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
@@ -41,6 +41,8 @@ class APTpiezoLogic(GenericLogic):
         """ Prepare logic module for work.
         """
         self._stepperMotor = self.stepperMotor()
+
+        self.position = 0
 
         # delay timer for querying hardware
         self.queryTimer = QtCore.QTimer()

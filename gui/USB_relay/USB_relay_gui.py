@@ -70,12 +70,6 @@ class RelayGUI(GUIBase):
         self._mw = RelayMainWindow()
         self._dw = ErrorDialog()
 
-        # Set default parameters
-        self.position = [0, 0, 0]
-        self._mw.StepSize.setValue(10)
-        self.stepSize = 10
-        self.is_manual = True
-
         # Connect buttons to functions
         self.buttons = []
         for i in range(18):

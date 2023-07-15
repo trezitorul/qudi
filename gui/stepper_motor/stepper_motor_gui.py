@@ -2,11 +2,12 @@ import os
 
 from gui.guibase import GUIBase
 from core.connector import Connector
-from qtpy import QtCore
-from qtpy import QtGui
 from qtpy import QtWidgets
 from qtpy import uic
-from gui.colordefs import QudiPalettePale as palette
+from qtpy.QtCore import QTimer, Signal
+from qtpy.QtCore import QTimer, Qt, QEvent
+
+
 
 class StepperMainWindow(QtWidgets.QMainWindow):
     """ Create the Main Window based on the *.ui file. """
@@ -21,13 +22,14 @@ class StepperMainWindow(QtWidgets.QMainWindow):
         uic.loadUi(ui_file, self)
         self.show()
 
-class PiezoGUI(GUIBase):
+
+class StepperGUI(GUIBase):
     """
 
     """
     
     # CONNECTORS #############################################################
-    aptlogic = Connector(interface='APTpiezoLogic')
+    stepperlogic = Connector(interface='StepperMotorLogic')
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
@@ -46,70 +48,71 @@ class PiezoGUI(GUIBase):
         """
 
         # CONNECTORS PART 2 ###################################################
-        self._aptlogic = self.aptlogic()
+        self._stepperlogic = self.stepperlogic()
 
-        self._mw = PiezoMainWindow()
+        self._mw = StepperMainWindow()
 
         # Set default parameters
         self.position = [0, 0, 0]
-        self._mw.StepSize.setValue(10)
-        self.stepSize = 10
-        self.is_manual = True
+        self._mw.StepSize.setValue(1)
+        self.stepSize = 1
+        self.is_step = True
+        self.is_pull = False
 
-        # Connect buttons to functions
+
+        # Connect buttons to functions        
         self._mw.StepSize.valueChanged.connect(self.stepChanged)
-        # self._mw.inputX.valueChanged.connect(self.manualInput)
-        # self._mw.inputY.valueChanged.connect(self.manualInput)
-        # self._mw.inputZ.valueChanged.connect(self.manualInput)
 
-        self._mw.upButton.clicked.connect(lambda: self.move(1,1))
-        self._mw.downButton.clicked.connect(lambda: self.move(1,-1))
-        self._mw.leftButton.clicked.connect(lambda: self.move(0,-1))
-        self._mw.rightButton.clicked.connect(lambda: self.move(0,1))
-        self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
-        self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
-        self._mw.switchMode.clicked.connect(self.updateButton)
+        self._mw.posDirButton.installEventFilter(self)  # Install event filter on the button
+        self._mw.posDirButton.clicked.connect(lambda: self.on_button_clicked(1))
+        self.setCentralWidget(self._mw.posDirButton)
 
-        self._mw.moveManual.clicked.connect(self.manualInput)
+        self._mw.negDirButton.installEventFilter(self)  # Install event filter on the button
+        self._mw.negDirButton.clicked.connect(lambda: self.on_button_clicked(-1))
+        self.setCentralWidget(self._mw.negDirButton)
+        
+        self.mouse_held = False
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.check_mouse_hold)
 
         # Connect update signal
-        self._aptlogic.sigUpdateDisplay.connect(self.updateDisplay)
+        self._stepperlogic.sigUpdateDisplay.connect(self.updateDisplay)
         self.show()
 
+    def eventFilter(self, obj, event):
+        if obj == self.button and event.type() == QEvent.MouseButtonPress:
+            if event.button() == Qt.LeftButton:
+                self.mouse_held = True
+                self.timer.start(150)  # Start the timer
 
-    def move(self, axis, direction):
-        """Move piezo
+        elif obj == self.button and event.type() == QEvent.MouseButtonRelease:
+            if event.button() == Qt.LeftButton:
+                self.mouse_held = False
+                self.timer.stop()  # Stop the timer
 
-        Args:
-            axis (int): 0->x, 1->y, 2->z
-            direction (int, optional): Step direction. Defaults to 1.
-        """
-        if (not self.is_manual):
-            position = self.position
-            position[axis] = self.position[axis] + self.stepSize * direction
+        return super().eventFilter(obj, event)
 
-            self._aptlogic.setPosition(position)
+
+    def check_mouse_hold(self, direction):
+        if self.mouse_held:
+            self.move(direction)
+
+
+    def on_button_clicked(self, direction):
+        self.move(direction)
+
+
+    def move(self, direction):
+        self._stepperlogic.move_rel(direction, self.step)
 
 
     def stepChanged(self):
         self.stepSize = self._mw.StepSize.value()
 
-    def manualInput(self):
-        if (self.is_manual):
-            position = [self._mw.inputX.value(), self._mw.inputY.value(), self._mw.inputZ.value()]
-            self.position = position
-            self._aptlogic.setPosition(position)
-
 
     def updateDisplay(self):
-        self.position = self._aptlogic.position
-        self._mw.xVal.setText(str(self.position[0]))
-        self._mw.yVal.setText(str(self.position[1]))
-        self._mw.zVal.setText(str(self.position[2]))
-        if (not self.is_manual):
-            self._mw.inputX.setValue(self.position[0])
-            self._mw.inputY.setValue(self.position[1])
-            self._mw.inputZ.setValue(self.position[2])
+        self.position = self._stepperlogic.position
+        self._mw.totalRev.setText(self.position)
 
     def show(self):
         """Make main window visible and put it above all other windows. """
@@ -117,12 +120,3 @@ class PiezoGUI(GUIBase):
         self._mw.show()
         self._mw.activateWindow()
         self._mw.raise_()
-
-
-    def updateButton(self):
-        if (self.is_manual == False):
-            self.is_manual = True
-            self._mw.switchMode.setText("Move by Input")
-        else:
-            self.is_manual = False
-            self._mw.switchMode.setText("Move by Step")
