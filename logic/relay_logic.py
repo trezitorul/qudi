@@ -25,10 +25,14 @@ from qtpy import QtCore
 from core.connector import Connector
 from core.configoption import ConfigOption
 from logic.generic_logic import GenericLogic
+from interface.relay_logic_interface import RelayLogicInterface
 
-class USB_RelayLogic(GenericLogic):
+class USB_RelayLogic(GenericLogic, RelayLogicInterface):
 
     relay = Connector(interface='USB_Relay')
+
+    sigError = QtCore.Signal()
+    sigError2 = QtCore.Signal(bool)
     
 
     def on_activate(self):

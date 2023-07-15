@@ -13,6 +13,7 @@ class DaqCounter(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
     _counterchannel = ConfigOption(name='counterchannel', missing='error')
+    _dt = ConfigOption('dt', .001)
 
     daq = Connector(interface='DAQ')
 
@@ -66,7 +67,7 @@ class DaqCounter(GenericLogic):
     
     @QtCore.Slot()
     def check_loop(self):
-        """ Get position and update display. """
+        """ Get counts and update display. """
         if self.stopRequest:
             if self.module_state.can('stop'):
                 self.module_state.stop()
@@ -74,7 +75,7 @@ class DaqCounter(GenericLogic):
             return
         qi = self.queryInterval
         try:
-            self.counts = self.getCounts(0.001)
+            self.counts = self.getCounts(self._dt)
 
         except:
             qi = 3000
@@ -87,4 +88,4 @@ class DaqCounter(GenericLogic):
         '''
         Implementing electrical pulse countings on the Daq cards
         '''
-        return self._daq.getCounts(dt, self.counterchannel)
+        return self._daq.getCounts(dt, self.counterchannel) / self._dt

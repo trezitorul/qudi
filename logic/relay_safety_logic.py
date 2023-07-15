@@ -25,16 +25,27 @@ from qtpy import QtCore
 from core.connector import Connector
 from core.configoption import ConfigOption
 from logic.generic_logic import GenericLogic
+from interface.relay_logic_interface import RelayLogicInterface
 
-class USB_RelaySafetyLogic(GenericLogic):
+class USB_RelaySafetyLogic(GenericLogic, RelayLogicInterface):
 
+    # connectors
     relay = Connector(interface='USB_Relay')
-    counter = Connector(interface='USB_Relay')
+    counter = Connector(interface='DaqCounter')
+
+    # config
+    _thresh = ConfigOption('thresh', 1000000, missing='warn')
+
+    # signals
+    sigError = QtCore.Signal()
+    sigError2 = QtCore.Signal(bool)
     
 
     def on_activate(self):
         self._relay = self.relay()
-
+        self._counter = self.counter()
+        
+        self._counter.sigUpdateDisplay.connect(self.checkCounts)
     
     def on_deactivate(self):
         pass
@@ -53,3 +64,14 @@ class USB_RelaySafetyLogic(GenericLogic):
 
     def close(self):
         self._relay.close()
+
+    def checkCounts(self):
+        if self._counter.counts > self._thresh:
+            self.allOff()
+            self.sigError.emit()
+
+    def continueCheck(self):
+        if self._counter.counts > self._thresh:
+            self.sigError2.emit(False)
+        else:
+            self.sigError2.emit(True)
