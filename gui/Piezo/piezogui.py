@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# GUI module for piezo
+
 import os
 
 from gui.guibase import GUIBase
@@ -55,14 +58,14 @@ class PiezoGUI(GUIBase):
         # Set default parameters
         self.position = [0, 0, 0]
         self._mw.StepSize.setValue(10)
-        self.stepSize = 10
-        self.isManual = True
+        self.step_size = 10
+        self.is_manual = True
 
         # Connect buttons to functions
-        self._mw.StepSize.valueChanged.connect(self.stepChanged)
-        # self._mw.inputX.valueChanged.connect(self.manualInput)
-        # self._mw.inputY.valueChanged.connect(self.manualInput)
-        # self._mw.inputZ.valueChanged.connect(self.manualInput)
+        self._mw.StepSize.valueChanged.connect(self.step_changed)
+        # self._mw.inputX.valueChanged.connect(self.manual_input)
+        # self._mw.inputY.valueChanged.connect(self.manual_input)
+        # self._mw.inputZ.valueChanged.connect(self.manual_input)
 
         self._mw.upButton.clicked.connect(lambda: self.move(1,1))
         self._mw.downButton.clicked.connect(lambda: self.move(1,-1))
@@ -70,12 +73,12 @@ class PiezoGUI(GUIBase):
         self._mw.rightButton.clicked.connect(lambda: self.move(0,1))
         self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
         self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
-        self._mw.switchMode.clicked.connect(self.updateButton)
+        self._mw.switchMode.clicked.connect(self.update_button)
 
-        self._mw.moveManual.clicked.connect(self.manualInput)
+        self._mw.moveManual.clicked.connect(self.manual_input)
 
         # Connect update signal
-        self._apt_logic.sigUpdateDisplay.connect(self.updateDisplay)
+        self._apt_logic.sig_update_display.connect(self.update_display)
         self.show()
 
 
@@ -86,35 +89,35 @@ class PiezoGUI(GUIBase):
             axis (int): 0->x, 1->y, 2->z
             direction (int, optional): Step direction. Defaults to 1.
         """
-        if (not self.isManual):
+        if (not self.is_manual):
             position = self.position
-            position[axis] = self.position[axis] + self.stepSize * direction
+            position[axis] = self.position[axis] + self.step_size * direction
 
-            self._apt_logic.setPosition(position)
+            self._apt_logic.set_position(position)
 
 
-    def stepChanged(self):
-        """ When the stepSize is changed
+    def step_changed(self):
+        """ When the step_size is changed
         """
-        self.stepSize = self._mw.StepSize.value()
+        self.step_size = self._mw.StepSize.value()
 
-    def manualInput(self):
+    def manual_input(self):
         """ Check if the user wants to manually input the position
         """
-        if (self.isManual):
+        if (self.is_manual):
             position = [self._mw.inputX.value(), self._mw.inputY.value(), self._mw.inputZ.value()]
             self.position = position
-            self._apt_logic.setPosition(position)
+            self._apt_logic.set_position(position)
 
 
-    def updateDisplay(self):
+    def update_display(self):
         """ Update the GUI display
         """
         self.position = self._apt_logic.position
         self._mw.xVal.setText(str(self.position[0]))
         self._mw.yVal.setText(str(self.position[1]))
         self._mw.zVal.setText(str(self.position[2]))
-        if (not self.isManual):
+        if (not self.is_manual):
             self._mw.inputX.setValue(self.position[0])
             self._mw.inputY.setValue(self.position[1])
             self._mw.inputZ.setValue(self.position[2])
@@ -127,12 +130,12 @@ class PiezoGUI(GUIBase):
         self._mw.raise_()
 
 
-    def updateButton(self):
+    def update_button(self):
         """ Update the button text
         """
-        if (self.isManual == False):
-            self.isManual = True
+        if (self.is_manual == False):
+            self.is_manual = True
             self._mw.switchMode.setText("Move by Input")
         else:
-            self.isManual = False
+            self.is_manual = False
             self._mw.switchMode.setText("Move by Step")

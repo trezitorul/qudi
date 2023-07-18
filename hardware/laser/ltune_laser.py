@@ -103,7 +103,7 @@ class LtuneLaser(Base):
         self.ser.close()
     
 
-    def set_outputPower(self, power):
+    def set_output_power(self, power):
         """
         Sets output power to inputted value in mW.
 
@@ -117,7 +117,7 @@ class LtuneLaser(Base):
         self.power = power
 
 
-    def get_outputPower(self):
+    def get_output_power(self):
         """
         Returns output power in mW.
         """

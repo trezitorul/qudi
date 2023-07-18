@@ -28,25 +28,27 @@ class DAQCounterGUI(GUIBase):
     """
 
     #Connector
-    daqcounter1 = Connector(interface='DaqCounter')
-    daqcounter2 = Connector(interface='DaqCounter')
+    daq_counter_1 = Connector(interface='DaqCounter')
+    daq_counter_2 = Connector(interface='DaqCounter')
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
 
     def on_activate(self):
-        self._daqcounter1 = self.daqcounter1()
-        self._daqcounter2 = self.daqcounter2()
+        """ Activate the module
+        """
+        self._daq_counter_1 = self.daq_counter_1()
+        self._daq_counter_2 = self.daq_counter_2()
 
         self._mw = DAQCounterMainWindow()
 
-        self._daqcounter1.sigUpdateDisplay.connect(self.count)
-        self._daqcounter1.sigUpdateDisplay.connect(self.count)
+        self._daq_counter_1.sig_update_display.connect(self.count)
+        self._daq_counter_1.sig_update_display.connect(self.count)
 
-        self._daqcounter1.sigUpdateDisplay.connect(self.updatePlot)
-        self._daqcounter2.sigUpdateDisplay.connect(self.updatePlot)
+        self._daq_counter_1.sig_update_display.connect(self.update_plot)
+        self._daq_counter_2.sig_update_display.connect(self.update_plot)
 
-        self.timePass = 0
+        self.time_pass = 0
         # Plot labels for 1st channel.
         self._pw = self._mw.countTrace1
 
@@ -54,12 +56,12 @@ class DAQCounterGUI(GUIBase):
         self.plot1.setLabel('left', 'Power Output', units='W', color='#00ff00')
         self.plot1.setLabel('bottom', 'Steps passed')
 
-        self.curvearr1 = []
+        self.curve_arr_1 = []
         ## Create an empty plot curve to be filled later, set its pen
-        self.curvearr1.append(self.plot1.plot())
-        self.curvearr1[-1].setPen(palette.c1)
+        self.curve_arr_1.append(self.plot1.plot())
+        self.curve_arr_1[-1].setPen(palette.c1)
 
-        self.countArr1 = []
+        self.count_arr_1 = []
 
         # Plot labels for 2nd channel
         self._pw = self._mw.countTrace2
@@ -68,16 +70,16 @@ class DAQCounterGUI(GUIBase):
         self.plot2.setLabel('left', 'Power Output', units='W', color='#00ff00')
         self.plot2.setLabel('bottom', 'Steps passed')
 
-        self.curvearr2 = []
+        self.curve_arr_2 = []
         ## Create an empty plot curve to be filled later, set its pen
-        self.curvearr2.append(self.plot2.plot())
-        self.curvearr2[-1].setPen(palette.c2)
+        self.curve_arr_2.append(self.plot2.plot())
+        self.curve_arr_2[-1].setPen(palette.c2)
 
-        self.countArr2 = []
+        self.count_arr_2 = []
 
         # Set default parameters
-        self.count1 = 0
-        self.count2 = 0
+        self.count_1 = 0
+        self.count_2 = 0
 
     def on_deactivate(self):
         """ Reverse steps of activation
@@ -88,35 +90,35 @@ class DAQCounterGUI(GUIBase):
         #return 0
 
     def count(self):
-        self.count1 = self._daqcounter1.counts
-        self.count2 = self._daqcounter2.counts
-        self._mw.daq_channel1.setText(str(self.count1))
-        self._mw.daq_channel2.setText(str(self.count2))
+        self.count_1 = self._daq_counter_1.counts
+        self.count_2 = self._daq_counter_2.counts
+        self._mw.daq_channel1.setText(str(self.count_1))
+        self._mw.daq_channel2.setText(str(self.count_2))
 
 
-    def updatePlot(self):
+    def update_plot(self):
         """ The function that grabs the data and sends it to the plot.
         """
-        self.timePass += 1
-        self.countArr1.append(self._daqcounter1.counts)
-        self.countArr2.append(self._daqcounter2.counts)
+        self.time_pass += 1
+        self.count_arr_1.append(self._daq_counter_1.counts)
+        self.count_arr_2.append(self._daq_counter_2.counts)
         
-        if (self.timePass < 300):
-            self.curvearr1[0].setData(
-                y = np.asarray(self.countArr1),
-                x = np.arange(0, self.timePass)
+        if (self.time_pass < 300):
+            self.curve_arr_1[0].setData(
+                y = np.asarray(self.count_arr_1),
+                x = np.arange(0, self.time_pass)
                 )
-            self.curvearr2[0].setData(
-                y = np.asarray(self.countArr2),
-                x = np.arange(0, self.timePass)
+            self.curve_arr_2[0].setData(
+                y = np.asarray(self.count_arr_2),
+                x = np.arange(0, self.time_pass)
                 )
         else:
-            self.curvearr1[0].setData(
-                y = np.asarray(self.countArr1[self.timePass - 300:self.timePass]),
-                x = np.arange(self.timePass - 300, self.timePass)
+            self.curve_arr_1[0].setData(
+                y = np.asarray(self.count_arr_1[self.time_pass - 300:self.time_pass]),
+                x = np.arange(self.time_pass - 300, self.time_pass)
                 )
-            self.curvearr2[0].setData(
-                y = np.asarray(self.countArr2[self.timePass - 300:self.timePass]),
+            self.curve_arr_2[0].setData(
+                y = np.asarray(self.count_arr_2[self.time_pass - 300:self.time_pass]),
                 x = np.arange(self.timePass - 300, self.timePass)
                 )
 
