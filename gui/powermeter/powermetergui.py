@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+"""
+Powermeter GUI module that displays power output in mW.
+
+Qudi is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Qudi is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Qudi. If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
+top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
+"""
+
 import os
 import numpy as np
 
@@ -23,8 +44,7 @@ class PowerMeterMainWindow(QtWidgets.QMainWindow):
         self.show()
 
 class PowerMeterGUI(GUIBase):
-    """
-
+    """ Power meter GUI main class.
     """
     
     # CONNECTORS #############################################################
@@ -45,8 +65,7 @@ class PowerMeterGUI(GUIBase):
         #return 0
 
     def on_activate(self):
-        """ 
-
+        """ Initialize, connect and configure the powermeter GUI.
         """
 
         # CONNECTORS PART 2 ###################################################
@@ -80,11 +99,13 @@ class PowerMeterGUI(GUIBase):
 
 
     def updateDisplay(self):
+        """ Updates display text with current output power in mW.
+        """
         self._mw.powerOutput.setText(str(round(self._pmlogic.power, 3)))
 
 
     def updatePlot(self):
-        """ The function that grabs the data and sends it to the plot.
+        """ The function that grabs the power output data and sends it to the plot.
         """
         self.timePass += 1
         self.powerOutputArr.append(self._pmlogic.power)

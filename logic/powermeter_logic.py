@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Buffer for simple data
+Powermeter logic module that queries the hardware.
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ from qtpy import QtCore
 
 
 class PowerMeterLogic(GenericLogic):
-    """ Logic module agreggating multiple hardware switches.
+    """ Power meter logic module with query loop.
     """
 
     powerMeter = Connector(interface='ProcessInterface')
@@ -108,10 +108,14 @@ class PowerMeterLogic(GenericLogic):
         self.sigUpdatePMDisplay.emit()
 
     def get_power(self):
-        power = self._powermeter.get_process_value()
-        return power
+        """ Retrieves output power in mW.
+        @return (float): output ower in mW
+        """
+        return self._powermeter.get_process_value()
     
     def start(self):
+        """ Emits signal to start query loop if not already running.
+        """
         if not self.isRunning:
             self.sigStart.emit()
             self.isRunning = True
@@ -119,5 +123,7 @@ class PowerMeterLogic(GenericLogic):
             pass
 
     def stop(self):
+        """ Emits signal to stop query loop.
+        """
         self.sigStop.emit()
         self.isRunning = False
