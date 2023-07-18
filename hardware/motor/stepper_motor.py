@@ -23,8 +23,6 @@ from core.module import Base
 from hardware.motor.stepper import Stepper
 from core.configoption import ConfigOption
 
-import pyfirmata
-
 
 class StepperMotor (Base):
     # def __init__(self):
@@ -36,15 +34,16 @@ class StepperMotor (Base):
     
     
     def on_activate(self):
+        pass
 
-        self.board = pyfirmata.Arduino('COM7') # AUTOMATE
+    def initialize(self, board):
+        self.board = board
         self.stepsPerRevolution = 2048
         self.rpm = 12
         self.position = 0
 
         self._Stepper = Stepper(self.board, self.stepsPerRevolution, self._motor_pin_1, self._motor_pin_3, self._motor_pin_2, self._motor_pin_4)
         self._Stepper.setSpeed(self.rpm)
-
 
     def on_deactivate(self):
         # self.move_abs(0)
@@ -62,11 +61,12 @@ class StepperMotor (Base):
 
         @return int: error code (0:OK, -1:error)
         """
-        if (revolution > 0):
-            self._Stepper.step(revolution - self.revolution)
-            self.revolution = revolution
-            return 0
-        else: return -1
+        # if (revolution > 0):
+        #     self._Stepper.step(revolution - self.revolution)
+        #     self.revolution = revolution
+        #     return 0
+        # else: return -1
+        pass
 
 
     def move_rel(self,  direction, step=1):
@@ -82,12 +82,9 @@ class StepperMotor (Base):
 
         @return int: error code (0:OK, -1:error)
         """
-        if (direction == 1):
-            self._Stepper.step(step)
-            self.position += step
-        else:
-            self._Stepper.step(-step)
-            self.position -= step
+
+        self._Stepper.step(step * direction)
+        self.position += step * direction
 
 
     def get_pos(self):
