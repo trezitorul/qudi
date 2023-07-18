@@ -72,13 +72,15 @@ class LACLogic(GenericLogic):
 
     @QtCore.Slot()
     def start_query_loop(self):
-        """ Start the readout loop. """
+        """ Start the readout loop. 
+        """
         self.module_state.run()
         self.queryTimer.start(self.queryInterval)
 
     @QtCore.Slot()
     def stop_query_loop(self):
-        """ Stop the readout loop. """
+        """ Stop the readout loop. 
+        """
         self.stopRequest = True
         for i in range(10):
             if not self.stopRequest:
@@ -89,7 +91,8 @@ class LACLogic(GenericLogic):
 
     @QtCore.Slot()
     def check_loop(self):
-        """ Get power and update display. """
+        """ Get power and update display. 
+        """
         if self.stopRequest:
             if self.module_state.can('stop'):
                 self.module_state.stop()
@@ -107,14 +110,23 @@ class LACLogic(GenericLogic):
 
 
     def set_pos(self, position):
+        """ Sets LAC position.
+
+        @param float position: 
+        """
         self._LACmotor.move_abs(position)
 
     
     def get_pos(self):
-        position = self._LACmotor.get_pos()
-        return position
+        """ Gets current position of the LAC
+
+        @return (float) self.position: position of LAC
+        """
+        return self._LACmotor.get_pos()
     
     def start(self):
+        """ Emits signal to start query loop.
+        """
         if not self.isRunning:
             self.sigStart.emit()
             self.isRunning = True
@@ -122,5 +134,7 @@ class LACLogic(GenericLogic):
             pass
 
     def stop(self):
+        """ Emits signal to stop query loop.
+        """
         self.sigStop.emit()
         self.isRunning = False

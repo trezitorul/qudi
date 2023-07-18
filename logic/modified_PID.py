@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-A module for controlling processes via PID regulation. Modifies preexisting PID module to function with LAC and powermeter.
+A module for controlling processes via PID regulation. Modifies preexisting PID module to 
+function with LAC and powermeter by using signals.
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,10 +45,11 @@ class ModPIDController(GenericLogic, PIDControllerInterface):
     timestep = ConfigOption(default=100)
     dummy = ConfigOption(default=True)
 
-    # status vars
-    kP = StatusVar(default=1)
-    kI = StatusVar(default=1)
-    kD = StatusVar(default=1)
+    # status vars (does not use kP kI and kD as status vars, sets them during activation)
+
+    # kP = StatusVar(default=1)
+    # kI = StatusVar(default=1)
+    # kD = StatusVar(default=1)
     setpoint = StatusVar(default=50)
     manualvalue = StatusVar(default=0)
 
@@ -88,7 +90,6 @@ class ModPIDController(GenericLogic, PIDControllerInterface):
 
         self.timer.timeout.connect(self._calcNextStep, QtCore.Qt.QueuedConnection)
         self.sigNewValue.connect(self._control.set_control_value)
-        # self.sigUpdate.connect(self._control.update)
 
         self.history = np.zeros([3, 5])
         self.savingState = False
@@ -117,8 +118,6 @@ class ModPIDController(GenericLogic, PIDControllerInterface):
 
         if self.countdown > 0:
             self.countdown -= 1
-            # print(self.setpoint)
-            # print(self.pv)
             self.previousdelta = self.setpoint - self.pv
             # print('Countdown: ', self.countdown)
         elif self.countdown == 0:
@@ -130,17 +129,13 @@ class ModPIDController(GenericLogic, PIDControllerInterface):
             delta = self.setpoint - self.pv
             if (abs(delta)/self.pv)<=self.relErr:
                 delta=0
-            # print("Delta "+str(delta))
             self.integrated += delta
             ## Calculate PID controller:
             self.P = self.kP * delta
-            # print("kP "+ str(self.kP))
-            # print("P "+str(self.P))
             self.I = self.kI * self.timestep * self.integrated
             self.D = self.kD / self.timestep * (delta - self.previousdelta)
 
             self.cv += self.P + self.I + self.D
-            # print(self.cv)
             self.previousdelta = delta
 
             ## limit contol output to maximum permissible limits
@@ -167,7 +162,6 @@ class ModPIDController(GenericLogic, PIDControllerInterface):
             self.sigUpdate.emit()
 
         self.timer.start(self.timestep)
-        # self._process.set_power(self._control.get_pos())
         self.sigUpdatePIDDisplay.emit(True)
 
     def startLoop(self):

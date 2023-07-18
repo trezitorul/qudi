@@ -1,3 +1,25 @@
+# -*- coding: utf-8 -*-
+
+"""
+This file contains a gui for manual LAC control.
+
+Qudi is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Qudi is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Qudi. If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
+top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
+"""
+
 import os
 import numpy as np
 
@@ -23,8 +45,7 @@ class ManualLACMainWindow(QtWidgets.QMainWindow):
         self.show()
 
 class ManualLACGUI(GUIBase):
-    """
-
+    """ Main manual LAC control GUI class.
     """
     
     # CONNECTORS #############################################################
@@ -42,11 +63,10 @@ class ManualLACGUI(GUIBase):
         @return int: error code (0:OK, -1:error)
         """
         self._mw.close()
-        #return 0
+        return 0
 
-    def on_activate(self): #output pos, input pos, start, stop
-        """ 
-
+    def on_activate(self):
+        """ Definition and initialisation of the GUI plus staring the measurement.
         """
 
         # CONNECTORS PART 2 ###################################################
@@ -57,21 +77,29 @@ class ManualLACGUI(GUIBase):
         # Buttons and spinboxes
         self._mw.startButton.clicked.connect(self.start)
         self._mw.stopButton.clicked.connect(self.stop)
-        self._mw.posInput.valueChanged.connect(self.setPosInput)
+        self._mw.posInput.valueChanged.connect(self.set_pos_input)
 
         # Connect signals
 
-        self._laclogic.sigUpdateLACDisplay.connect(self.updateDisplay)
+        self._laclogic.sigUpdateLACDisplay.connect(self.update_display)
         
-    def updateDisplay(self):
+    def update_display(self):
+        """ Updates display with LAC output position.
+        """
         self._mw.posOutput.setText(str(round(self._laclogic.position, 3)))
 
-    def setPosInput(self):
+    def set_pos_input(self):
+        """ Sets LAC position input using spinbox value.
+        """
         self.posInput = self._mw.posInput.value()
         self._laclogic.set_pos(self.posInput)
 
     def start(self):
+        """ Starts LAC logic loop.
+        """
         self._laclogic.start()
 
     def stop(self):
+        """ Stops LAC logic loop.
+        """
         self._laclogic.stop()

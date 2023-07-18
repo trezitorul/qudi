@@ -55,13 +55,11 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
     def move_abs(self, position):
         """ Moves stage to absolute position (absolute movement)
 
-        0 -> 100
-        0 -> 1023
         The value you want to send is calculated by (distance * 1023)/stroke
         where distance is intended distance and stroke is max extension length, 
         all values in mm. Round to nearest integer
 
-        @param int setPos: position to set stage to.
+        @param (int) setPos: position to set stage to. 0 -> 100
 
         @return int: error code (0:OK, -1:error)
         """
@@ -80,7 +78,7 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
                                 If nothing is passed, then from each axis the
                                 position is asked.
 
-        @return int position: position of dummy LAC
+        @return (float) self.position: position of dummy LAC
         """
         position = self._LAC.get_feedback()
         
