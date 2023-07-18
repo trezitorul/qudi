@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+"""
+GUI module to test many hardware devices simultaneously.
+
+Qudi is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Qudi is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Qudi. If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
+top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
+"""
+
 import os
 import numpy as np
 import time
@@ -24,15 +45,13 @@ class DashboardMainWindow(QtWidgets.QDialog):
         self.show()
 
 class DashboardGUI(GUIBase):
-    """
-
+    """ Hardware testing dashboard main class.
     """
     
     # CONNECTORS #############################################################
     pmlogic = Connector(interface='PowerMeterLogic')
     pidlogic = Connector(interface='SoftPIDController')
     laclogic = Connector(interface='LACLogic')
-    querylogic = Connector(interface='QueryLoopLogic')
     aptlogic = Connector(interface='APTpiezoLogic')
     flipperlogic = Connector(interface='FlipperMirrorLogic')
     daqcounter1 = Connector(interface='DaqCounter')
@@ -48,11 +67,13 @@ class DashboardGUI(GUIBase):
 
 
     def on_activate(self):
+        """ Initialize, connect and configure the relay board GUI.
+        """
+
         # CONNECTORS PART 2 ###################################################
         self._pmlogic = self.pmlogic()
         self._pidlogic = self.pidlogic()
         self._laclogic = self.laclogic()
-        self._querylogic = self.querylogic()
         self._aptlogic = self.aptlogic()
         self._flipperlogic = self.flipperlogic()
         self._daqcounter1 = self.daqcounter1()
@@ -91,12 +112,12 @@ class DashboardGUI(GUIBase):
         self.galvoStepSize = 10
 
         # Connect buttons to functions
-        self._mw.upButton.clicked.connect(lambda: self.move(1,1))
-        self._mw.downButton.clicked.connect(lambda: self.move(1,-1))
-        self._mw.leftButton.clicked.connect(lambda: self.move(0,-1))
-        self._mw.rightButton.clicked.connect(lambda: self.move(0,1))
-        self._mw.zUpButton.clicked.connect(lambda: self.move(2,1))
-        self._mw.zDownButton.clicked.connect(lambda: self.move(2,-1))
+        self._mw.upButton.clicked.connect(lambda: self.movePiezo(1,1))
+        self._mw.downButton.clicked.connect(lambda: self.movePiezo(1,-1))
+        self._mw.leftButton.clicked.connect(lambda: self.movePiezo(0,-1))
+        self._mw.rightButton.clicked.connect(lambda: self.movePiezo(0,1))
+        self._mw.zUpButton.clicked.connect(lambda: self.movePiezo(2,1))
+        self._mw.zDownButton.clicked.connect(lambda: self.movePiezo(2,-1))
 
         self._mw.galvoUpButton.clicked.connect(lambda: self.moveGalvo(1,1))
         self._mw.galvoDownButton.clicked.connect(lambda: self.moveGalvo(1,-1))
@@ -113,9 +134,8 @@ class DashboardGUI(GUIBase):
         self._mw.offButton_1.clicked.connect(lambda: self.flipOff(1))
         self._mw.offButton_2.clicked.connect(lambda: self.flipOff(2))
 
-
         # Connect spin boxes
-        self._mw.StepSize.valueChanged.connect(self.stepChanged)
+        self._mw.StepSize.valueChanged.connect(self.piezoStepChanged)
         self._mw.GalvoStepSize.valueChanged.connect(self.galvoStepChanged)
         self._mw.powerInput.valueChanged.connect(self.setPowerInput)
         self._mw.posInput.valueChanged.connect(self.setPosInput)
@@ -128,8 +148,6 @@ class DashboardGUI(GUIBase):
         self._pidlogic.sigUpdatePIDDisplay.connect(self.updateDisplay)
         self._pidlogic.sigUpdatePIDDisplay.connect(self.updatePlot)
 
-        # self._querylogic.sigUpdateVariable.connect(self.updateDisplay)
-        # self._querylogic.sigUpdateVariable.connect(self.updatePlot)
         self._aptlogic.sigUpdateDisplay.connect(self.updatePiezoDisplay)
 
         self._daqcounter1.sigUpdateDisplay.connect(self.count)
@@ -149,10 +167,12 @@ class DashboardGUI(GUIBase):
         @return int: error code (0:OK, -1:error)
         """
         self._mw.close()
-        #return 0
+        return 0
 
 
     def updateDisplay(self):
+        """Updates power output and lav position values.
+        """
         if (self.isPID):
             self._mw.powerOutput.setText(str(round(self._pidlogic.pv, 3)))
             self._mw.posOutput.setText(str(round(self._pidlogic.cv, 3)))
@@ -162,7 +182,7 @@ class DashboardGUI(GUIBase):
 
 
     def updatePlot(self):
-        """ The function that grabs the data and sends it to the plot.
+        """ The function that grabs the data and sends it to the power output plot.
         """
         if (self.isPID):
             self.timePass += 1
@@ -182,31 +202,35 @@ class DashboardGUI(GUIBase):
 
 
     def setPowerInput(self):
+        """Sets desired power meter value for PID process value using power input spinbox.
+        """
         self.powerInput = self._mw.powerInput.value()
         self._pidlogic.set_setpoint(self.powerInput)
 
 
     def setPosInput(self):
-
+        """Sets desired LAC position using position input spinbox.
+        """
         self.posInput = self._mw.posInput.value()
         self._laclogic.set_pos(self.posInput)
-        return
 
 
     def PIDmode(self):
-        # # self._querylogic.sigStopQuery.emit()
-        # self._pidlogic.sigStartPID.emit()
-        # self._mw.startButton.setEnabled(True)
-        # self._mw.stopButton.setEnabled(True)
+        """ Sets LAC control to PID mode (which uses powermeter).
+        """
         self._laclogic.stop()
         self.isPID = True
 
     def manualMode(self):
+        """ Sets LAC control to manual mode, allowing a desired position to be set instead of a power level.
+        """
         self._pidlogic.sigStopPID.emit()
         self.isPID = False
 
 
     def start(self):
+        """ Starts logic query loops.
+        """
         if self.isPID:
             self._pidlogic.sigStartPID.emit()
         else:
@@ -215,18 +239,19 @@ class DashboardGUI(GUIBase):
         self._pmlogic.start()
 
     def stop(self):
+        """ Stops logic query loops.
+        """
         if self.isPID:
             self._pidlogic.sigStopPID.emit()
         else:
             self._laclogic.stop()
         self._pmlogic.stop()
 
-    def move(self, axis, direction):
+    def movePiezo(self, axis, direction):
         """Move piezo
 
-        Args:
-            axis (int): 0->x, 1->y, 2->z
-            direction (int, optional): Step direction. Defaults to 1.
+        @param axis (int): 0->x, 1->y, 2->z
+        @param direction (int): Step direction. Defaults to 1.
         """
 
         position = self.position
@@ -237,9 +262,8 @@ class DashboardGUI(GUIBase):
     def moveGalvo(self, axis, direction):
         """Move galvo
 
-        Args:
-            axis (int): 0->x, 1->y
-            direction (int, optional): Step direction. Defaults to 1.
+        @param: axis (int): 0->x, 1->y
+        @param: direction (int): Step direction. Defaults to 1.
         """
 
         galvoPosition = self.galvoPosition
@@ -247,44 +271,64 @@ class DashboardGUI(GUIBase):
 
         self._galvologic.setPosition(galvoPosition)
 
-    def stepChanged(self):
+    def piezoStepChanged(self):
+        """Changes piezo step size using spinbox.
+        """
         self.stepSize = self._mw.StepSize.value()
 
     def galvoStepChanged(self):
+        """Changes galvo step size using spinbox.
+        """
         self.galvoStepSize = self._mw.GalvoStepSize.value()
 
     def updatePiezoDisplay(self):
+        """Updates piezo display with x, y, and z axis positions.
+        """
         self.position = self._aptlogic.position
         self._mw.xVal.setText(str(self.position[0]))
         self._mw.yVal.setText(str(self.position[1]))
         self._mw.zVal.setText(str(self.position[2]))
 
     def updateGalvoDisplay(self):
+        """Updates galvo display with x and y axis positions.
+        """
         self.galvoPosition = self._galvologic.position
         self._mw.galvoXVal.setText(str(round(self.galvoPosition[0],3)))
         self._mw.galvoYVal.setText(str(round(self.galvoPosition[1],3)))
     
     def change_kP(self):
+        """Change kP for PID loop using spinbox.
+        """
         kp = self._mw.k_P.value()
         self._pidlogic.set_kp(kp)
 
     def change_kI(self):
+        """Change kI for PID loop using spinbox.
+        """
         ki = self._mw.k_I.value()
         self._pidlogic.set_ki(ki)
 
     def change_kD(self):
+        """Change kD for PID loop using spinbox.
+        """
         kd = self._mw.k_D.value()
         self._pidlogic.set_kd(kd)
 
     def flipOn(self, num):
+        """Flips on one flipper mirror.
+        @param (int) num: specifies which flipper mirror to turn on.
+        """
         self._flipperlogic.set_mode('on', num)
-        # pass
 
     def flipOff(self, num):
+        """Flips off one flipper mirror.
+        @param (int) num: specifies which flipper mirror to turn off.
+        """
         self._flipperlogic.set_mode('off', num)
-        # pass
 
     def count(self):
+        """Updates daq display with counts.
+        """
         self.count1 = self._daqcounter1.counts
         self.count2 = self._daqcounter2.counts
         self._mw.daq_channel1.setText(str(self.count1))
