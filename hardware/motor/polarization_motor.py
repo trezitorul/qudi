@@ -48,8 +48,8 @@ class PolarizationMotor(Base):
     """ Hardware module for polarization motor.
     """
 
-    device_ID = ConfigOption(name='device_ID', missing='error')
-    max_velocity = ConfigOption(name='max_velocity', missing='error')
+    device_ID = ConfigOption(name='deviceID', missing='error')
+    max_velocity = ConfigOption(name='maxvelocity', missing='error')
 
 
     def on_activate(self):

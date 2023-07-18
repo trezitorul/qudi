@@ -74,7 +74,7 @@ class DaqCounter(GenericLogic):
             return
         qi = self.query_interval
         try:
-            self.counts = self.getCounts(self.dt)
+            self.counts = self.get_counts(self.dt)
 
         except:
             qi = 3000
@@ -83,11 +83,11 @@ class DaqCounter(GenericLogic):
         self.query_timer.start(qi)
         self.sig_update_display.emit()
 
-    def getCounts(self,dt):
+    def get_counts(self,dt):
         '''
         Implementing electrical pulse countings on the Daq cards
         Args:
             dt (floats): time differential
         Return number of counts
         '''
-        return self._daq.getCounts(dt, self._counter_channel) / self.dt
+        return self._daq.get_counts(dt, self._counter_channel) / self.dt

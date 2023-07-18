@@ -70,10 +70,10 @@ class StepperGUI(GUIBase):
         self._mw.rightButton.clicked.connect(lambda: self.on_button_clicked(0, 1))
 
         self._mw.upButton.installEventFilter(self)  # Install event filter on the button
-        self._mw.upButton.clicked.connect(lambda: self.on_button_clicked(1, -1))
+        self._mw.upButton.clicked.connect(lambda: self.on_button_clicked(1, 1))
 
         self._mw.downButton.installEventFilter(self)  # Install event filter on the button
-        self._mw.downButton.clicked.connect(lambda: self.on_button_clicked(1, 1))
+        self._mw.downButton.clicked.connect(lambda: self.on_button_clicked(1, -1))
 
         self.mouse_held = False
         self.timer = QTimer()

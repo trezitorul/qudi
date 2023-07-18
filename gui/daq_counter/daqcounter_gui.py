@@ -119,6 +119,6 @@ class DAQCounterGUI(GUIBase):
                 )
             self.curve_arr_2[0].setData(
                 y = np.asarray(self.count_arr_2[self.time_pass - 300:self.time_pass]),
-                x = np.arange(self.timePass - 300, self.timePass)
+                x = np.arange(self.time_pass - 300, self.time_pass)
                 )
 
