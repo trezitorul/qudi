@@ -24,7 +24,7 @@ import threading
 import time
 
 
-class APTDevice_Piezo(APTDevice):
+class APTDevicePiezo(APTDevice):
     """
     Initialise and open serial device for the ThorLabs APT controller.
 
@@ -79,21 +79,40 @@ class APTDevice_Piezo(APTDevice):
         self.info = []
         for channel in channels:
             # Max voltage for the NanoMax 303 Piezo Stage from ThorLabs is 75 V
-            self.info.append({"channel": channel, "serial_number": serial_number, "voltage": 0, "maxVoltage": 75, "mode": 2, "state": 1, 
-                              "maxTravel": 0, "position": 0})
+            self.info.append({"channel": channel, "serial_number": serial_number, "voltage": 0, "max_voltage": 75, "mode": 2, "state": 1, 
+                              "max_travel": 0, "position": 0})
 
-            self.set_ChannelState(channel=channel-1, state=1)
+            self.set_channel_state(channel=channel-1, state=1)
             self.set_zero(channel=channel-1)
-            self.set_controlMode(channel=channel-1, mode=2)
+            self.set_control_mode(channel=channel-1, mode=2)
 
         for channel in channels:
-            maxTravel = self.get_maxTravel(channel=channel-1)
-            self.info[channel-1]["maxTravel"] = maxTravel
+            max_travel = self.get_max_travel(channel=channel-1)
+            self.info[channel-1]["max_travel"] = max_travel
 
 
     @classmethod
     def create(cls, serial_port=None, deviceID=None, vid=None, pid=None, manufacturer=None, product=None, serial_number=None, 
                  location=None, controller=EndPoint.HOST, bays=(EndPoint.USB,), channels=(1,2), status_updates="polling"):
+        """ Create the APTDevicePiezo Class
+
+        Args:
+            serial_port (str, optional): serial port name. Defaults to None.
+            deviceID (str, optional): device ID. Defaults to None.
+            vid (_type_, optional): Dont change. Defaults to None.
+            pid (_type_, optional): _description_. Defaults to None.
+            manufacturer (_type_, optional): _description_. Defaults to None.
+            product (_type_, optional): _description_. Defaults to None.
+            serial_number (_type_, optional): _description_. Defaults to None.
+            location (_type_, optional): _description_. Defaults to None.
+            controller (_type_, optional): _description_. Defaults to EndPoint.HOST.
+            bays (tuple, optional): _description_. Defaults to (EndPoint.USB,).
+            channels (tuple, optional): _description_. Defaults to (1,2).
+            status_updates (str, optional): _description_. Defaults to "polling".
+
+        Returns:
+            APTDevicePizeo: return the actual class object
+        """
         if deviceID!=None:
             print("Attempting to connect")
             ports = list(serial.tools.list_ports.comports())
@@ -102,7 +121,7 @@ class APTDevice_Piezo(APTDevice):
                 if "APT" in p.description:
                     try:
                         serial_port = p.name
-                        piezo=APTDevice_Piezo(serial_port=serial_port, vid=vid, pid=pid, manufacturer=manufacturer, product=product, 
+                        piezo=APTDevicePiezo(serial_port=serial_port, vid=vid, pid=pid, manufacturer=manufacturer, product=product, 
                                               serial_number=serial_number, location=location, controller=controller, bays=bays, channels=channels, 
                                               status_updates=status_updates)
                         if piezo.get_serial()==deviceID:
@@ -125,7 +144,7 @@ class APTDevice_Piezo(APTDevice):
                 return piezo           
 
 
-    def get_ChannelState(self, bay=0, channel=0, timeout=10):
+    def get_channel_state(self, bay=0, channel=0, timeout=10):
         """
         Get the current channel state. 
 
@@ -143,7 +162,7 @@ class APTDevice_Piezo(APTDevice):
         return self.info[channel]["state"]
 
 
-    def set_ChannelState(self, bay=0, channel=0, state=1):
+    def set_channel_state(self, bay=0, channel=0, state=1):
         """
         Set the channel state. 
 
@@ -161,7 +180,7 @@ class APTDevice_Piezo(APTDevice):
         self.info[channel]["state"] = state
 
 
-    def set_controlMode(self, bay=0, channel=0, mode=1):
+    def set_control_mode(self, bay=0, channel=0, mode=1):
         """
         Set the control Mode. 
         0x01 Open Loop (no feedback)
@@ -181,7 +200,7 @@ class APTDevice_Piezo(APTDevice):
         self.info[channel]["mode"] = mode
 
 
-    def get_controlMode(self, bay=0, channel=0, timeout=10):
+    def get_control_mode(self, bay=0, channel=0, timeout=10):
         """
         Get current control mode. 
         0x01 Open Loop (no feedback)
@@ -212,19 +231,19 @@ class APTDevice_Piezo(APTDevice):
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
 
-        currMode = self.info[channel]["mode"]
+        curr_mode = self.info[channel]["mode"]
 
-        if (currMode != 0x01 and currMode != 0x03):
+        if (curr_mode != 0x01 and curr_mode != 0x03):
             raise ValueError("MUST BE IN OPEN LOOP MODE")
 
         if (voltage == None):
             raise ValueError("PLEASE INPUT VOLTAGE")
 
-        currMax = self.info[channel]["maxVoltage"]
-        voltageOut=int(32767*(voltage/currMax))
+        curr_max = self.info[channel]["max_voltage"]
+        voltage_out=int(32767*(voltage/curr_max))
 
         self._log.debug(f"Sets output voltage {voltage} on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
-        self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputvolts(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel], voltage=voltageOut))
+        self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputvolts(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel], voltage=voltage_out))
 
         self.info[channel]["voltage"] = voltage
 
@@ -246,25 +265,25 @@ class APTDevice_Piezo(APTDevice):
         self.message_event.clear()
 
         voltage = self.info[channel]["voltage"]
-        maxVoltage = self.info[channel]["maxVoltage"]
+        max_voltage = self.info[channel]["max_voltage"]
 
-        return voltage/32767*maxVoltage
+        return voltage/32767*max_voltage
 
 
-    def get_maxTravel(self, bay=0, channel=0, timeout=10):
+    def get_max_travel(self, bay=0, channel=0, timeout=10):
         """
         Get maximum travel distance.
 
         :param bay: Index (0-based) of controller bay to send the command.
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
-        self._log.debug(f"Gets maxTravel on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
+        self._log.debug(f"Gets max_travel on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
         self._loop.call_soon_threadsafe(self._write, apt.pz_req_maxtravel(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel]))
 
         self.message_event.wait(timeout=timeout)
         self.message_event.clear()
 
-        return self.info[channel]["maxTravel"]
+        return self.info[channel]["max_travel"]
 
 
     def set_position(self, position=None , bay=0, channel=0):
@@ -274,40 +293,40 @@ class APTDevice_Piezo(APTDevice):
         Units: microns
 
         :param position: Output position relative to zero position; sets as an integer in the range 
-                         from 0 to 32767, correspond to 0-100% of piezo extension aka maxTravel.
+                         from 0 to 32767, correspond to 0-100% of piezo extension aka max_travel.
         :param bay: Index (0-based) of controller bay to send the command.
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
-        max = self.info[channel]["maxTravel"]
+        max = self.info[channel]["max_travel"]
         if (position == None):
             raise ValueError("MISSING INPUT FOR POSITION")
 
         if (position < 0):
-            positionOut = 0
+            position_out = 0
             self.info[channel]["position"] = 0
             self._log.debug(f"Requested position not available. Sets position to 0 on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
             self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputpos(source=EndPoint.HOST, dest=self.bays[bay], 
-                                                                              chan_ident=self.channels[channel], position=positionOut))
+                                                                              chan_ident=self.channels[channel], position=position_out))
             raise ValueError("POSITION MUST BE POSITIVE")
 
-        currMode = self.info[channel]["mode"]
+        curr_mode = self.info[channel]["mode"]
 
-        if (currMode != 0x02 and currMode != 0x04):
+        if (curr_mode != 0x02 and curr_mode != 0x04):
             raise ValueError("MUST BE IN CLOSED LOOP MODE")
 
-        positionOut=int((32767.0*position/max))
+        position_out=int((32767.0*position/max))
 
-        if (positionOut > 32767):
-            positionOut = 32767
+        if (position_out > 32767):
+            position_out = 32767
             self.info[channel]["position"] = max
             self._log.debug(f"Requested position not available. Sets position to max={max} on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
             self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputpos(source=EndPoint.HOST, dest=self.bays[bay], 
-                                                                              chan_ident=self.channels[channel], position=positionOut))
+                                                                              chan_ident=self.channels[channel], position=position_out))
             raise ValueError("POSITION EXCEEDED MAX. SET POSITION TO MAX")
 
 
         self._log.debug(f"Sets position {position} on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
-        self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputpos(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel], position=positionOut))
+        self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputpos(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel], position=position_out))
 
         self.info[channel]["position"] = position
 
@@ -315,16 +334,16 @@ class APTDevice_Piezo(APTDevice):
     def get_position(self , bay=0, channel=0, timeout=10):
         """
         Get position of the piezo as an integer in the range from 0 to 32767, correspond 
-        to 0-100% of piezo extension aka maxTravel.
+        to 0-100% of piezo extension aka max_travel.
         Units: microns
 
         :param bay: Index (0-based) of controller bay to send the command.
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
 
-        currMode = self.info[channel]["mode"]
+        curr_mode = self.info[channel]["mode"]
 
-        if (currMode != 0x02 and currMode != 0x04):
+        if (curr_mode != 0x02 and curr_mode != 0x04):
             raise ValueError("MUST BE IN CLOSED LOOP MODE")
 
         self._log.debug(f"Sets position on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
@@ -334,9 +353,9 @@ class APTDevice_Piezo(APTDevice):
         self.message_event.clear()
 
         position = self.info[channel]["position"]
-        maxTravel = self.info[channel]["maxTravel"]
+        max_travel = self.info[channel]["max_travel"]
 
-        return position/32767*maxTravel
+        return position/32767*max_travel
 
 
     def set_zero(self , bay=0, channel=0):
@@ -350,10 +369,10 @@ class APTDevice_Piezo(APTDevice):
         self._loop.call_soon_threadsafe(self._write, apt.pz_set_zero(source=EndPoint.HOST, dest=self.bays[bay], chan_ident=self.channels[channel]))
 
 
-    def get_maxvoltage(self , bay=0, channel=0):
+    def get_max_voltage(self , bay=0, channel=0):
         """
         Get max voltage.
-        apt.pz_req_outputmaxvolts is not working, but the dictionary value for maxVoltage can be accessed
+        apt.pz_req_outputmaxvolts is not working, but the dictionary value for max_voltage can be accessed
 
 
         :param bay: Index (0-based) of controller bay to send the command.
@@ -362,13 +381,13 @@ class APTDevice_Piezo(APTDevice):
         # self._log.debug(f"Gets max output voltage on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
         # self._loop.call_soon_threadsafe(self._write, apt.pz_req_outputmaxvolts(source=EndPoint.USB, dest=self.bays[bay], chan_ident=self.channels[channel]))
 
-        return self.info[channel]["maxVoltage"] 
+        return self.info[channel]["max_voltage"] 
 
 
-    def set_maxvoltage(self, voltage=None , bay=0, channel=0):
+    def set_max_voltage(self, voltage=None , bay=0, channel=0):
         """
         Set max voltage.
-        apt.pz_set_outputmaxvolts is not working, but the dictionary value for maxVoltage can be overwritten by voltage
+        apt.pz_set_outputmaxvolts is not working, but the dictionary value for max_voltage can be overwritten by voltage
 
         :param voltage: Max voltage to set.
         :param bay: Index (0-based) of controller bay to send the command.
@@ -377,7 +396,7 @@ class APTDevice_Piezo(APTDevice):
         # self._log.debug(f"Sets max output voltage {voltage} on [bay={self.bays[bay]:#x}, channel={self.channels[channel]}].")
         # self._loop.call_soon_threadsafe(self._write, apt.pz_set_outputmaxvolts(source=EndPoint.USB, dest=self.bays[bay], chan_ident=self.channels[channel], voltage=voltage))
 
-        self.info[channel]["maxVoltage"] = voltage
+        self.info[channel]["max_voltage"] = voltage
 
 
     def get_serial(self, bay=0, timeout=10):
@@ -427,7 +446,7 @@ class APTDevice_Piezo(APTDevice):
             self.message_event.set()
 
         elif m.msg == "pz_get_maxtravel":
-            self.info[m.chan_ident-1]["maxTravel"] = m.travel / 10
+            self.info[m.chan_ident-1]["max_travel"] = m.travel / 10
             self.message_event.set()
 
         elif m.msg == "pz_get_outputpos":

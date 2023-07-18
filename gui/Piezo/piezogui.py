@@ -23,11 +23,11 @@ class PiezoMainWindow(QtWidgets.QMainWindow):
 
 class PiezoGUI(GUIBase):
     """
-
+    Main GUI functionalities
     """
     
     # CONNECTORS #############################################################
-    aptlogic = Connector(interface='APTpiezoLogic')
+    apt_logic = Connector(interface='APTpiezoLogic')
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
@@ -42,11 +42,13 @@ class PiezoGUI(GUIBase):
 
     def on_activate(self):
         """ 
-
+        On activate of the GUI
+        
+        No return
         """
 
         # CONNECTORS PART 2 ###################################################
-        self._aptlogic = self.aptlogic()
+        self._apt_logic = self.apt_logic()
 
         self._mw = PiezoMainWindow()
 
@@ -54,7 +56,7 @@ class PiezoGUI(GUIBase):
         self.position = [0, 0, 0]
         self._mw.StepSize.setValue(10)
         self.stepSize = 10
-        self.is_manual = True
+        self.isManual = True
 
         # Connect buttons to functions
         self._mw.StepSize.valueChanged.connect(self.stepChanged)
@@ -73,7 +75,7 @@ class PiezoGUI(GUIBase):
         self._mw.moveManual.clicked.connect(self.manualInput)
 
         # Connect update signal
-        self._aptlogic.sigUpdateDisplay.connect(self.updateDisplay)
+        self._apt_logic.sigUpdateDisplay.connect(self.updateDisplay)
         self.show()
 
 
@@ -84,29 +86,35 @@ class PiezoGUI(GUIBase):
             axis (int): 0->x, 1->y, 2->z
             direction (int, optional): Step direction. Defaults to 1.
         """
-        if (not self.is_manual):
+        if (not self.isManual):
             position = self.position
             position[axis] = self.position[axis] + self.stepSize * direction
 
-            self._aptlogic.setPosition(position)
+            self._apt_logic.setPosition(position)
 
 
     def stepChanged(self):
+        """ When the stepSize is changed
+        """
         self.stepSize = self._mw.StepSize.value()
 
     def manualInput(self):
-        if (self.is_manual):
+        """ Check if the user wants to manually input the position
+        """
+        if (self.isManual):
             position = [self._mw.inputX.value(), self._mw.inputY.value(), self._mw.inputZ.value()]
             self.position = position
-            self._aptlogic.setPosition(position)
+            self._apt_logic.setPosition(position)
 
 
     def updateDisplay(self):
-        self.position = self._aptlogic.position
+        """ Update the GUI display
+        """
+        self.position = self._apt_logic.position
         self._mw.xVal.setText(str(self.position[0]))
         self._mw.yVal.setText(str(self.position[1]))
         self._mw.zVal.setText(str(self.position[2]))
-        if (not self.is_manual):
+        if (not self.isManual):
             self._mw.inputX.setValue(self.position[0])
             self._mw.inputY.setValue(self.position[1])
             self._mw.inputZ.setValue(self.position[2])
@@ -120,9 +128,11 @@ class PiezoGUI(GUIBase):
 
 
     def updateButton(self):
-        if (self.is_manual == False):
-            self.is_manual = True
+        """ Update the button text
+        """
+        if (self.isManual == False):
+            self.isManual = True
             self._mw.switchMode.setText("Move by Input")
         else:
-            self.is_manual = False
+            self.isManual = False
             self._mw.switchMode.setText("Move by Step")

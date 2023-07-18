@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# Hardware module the Ltune laser
 # Copyright Alina Stuleanu 2023
 # 
 # RGB Lasersystems Lambda laser implementation, using the company's python integration example.
@@ -10,8 +12,8 @@ from core.configoption import ConfigOption
 
 
 class LtuneLaser(Base):
-    _deviceID = ConfigOption(name='deviceID', missing='warn', default=None)
-    _com_port = ConfigOption(name='com_port', missing='warn', default=None)
+    deviceID = ConfigOption(name='deviceID', missing='warn', default=None)
+    com_port = ConfigOption(name='com_port', missing='warn', default=None)
     """
     Open serial connection and initialize RGB Lasersystems Lambda device.
 
@@ -21,7 +23,7 @@ class LtuneLaser(Base):
     def on_activate(self):
         """ Initialisation performed during activation of the module.
          """
-        self.initialize(com_port=self._com_port, deviceID=self._deviceID)
+        self.initialize(com_port=self.com_port, deviceID=self.deviceID)
 
 
     def on_deactivate(self):
@@ -33,6 +35,16 @@ class LtuneLaser(Base):
 
 
     def initialize(self, com_port=None, deviceID = None):
+        """ Actually initialising the laser serial comm
+
+        Args:
+            com_port (str, optional): _description_. Defaults to None.
+            deviceID (_type_, optional): _description_. Defaults to None.
+
+        Raises:
+            ValueError: _description_
+            ValueError: _description_
+        """
         if com_port == None:
             if len(deviceID)<5: 
                 raise ValueError(f"Device {deviceID} is incorrect length")
