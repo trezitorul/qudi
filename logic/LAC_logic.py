@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Buffer for simple data
+LAC logic module which queries the hardware on a set interval.
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

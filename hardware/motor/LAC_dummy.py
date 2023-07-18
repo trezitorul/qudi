@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
+LAC dummy hardware module.
+
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -31,41 +33,40 @@ class LACDummy(Base, MotorInterface, ProcessControlInterface):
     
     
     def on_activate(self):
-        # Reset the LAC
-        # self._LAC.reset()
-        # self._LAC.set_accuracy(value=0)
-        # self._LAC.set_movement_threshold(value=0)
-        # self._LAC.set_proportional_gain(100)
-        # self._LAC.set_derivative_gain(1)
-        # self._LAC.set_accuracy(value=0)
+        """ Initialisation performed during activation of the module.
+        """
 
         # Set position to 0
         self.position = 0
 
 
     def on_deactivate(self):
+        """ Deinitialisation performed during deactivation of the module.
+        """
         pass
 
     
-    # 0 -> 100
-    # 0 -> 1023
-    # The value you want to send is calculated by (distance * 1023)/stroke
-    # where distance is intended distance and stroke is max extension length, 
-    # all values in mm. Round to nearest integer
     def move_abs(self, setPos):
         """ Moves stage to absolute position (absolute movement)
 
-        @param dict param_dict: dictionary, which passes all the relevant
-                                parameters, which should be changed. Usage:
-                                 {'axis_label': <the-abs-pos-value>}.
-                                 'axis_label' must correspond to a label given
-                                 to one of the axis.
+        0 -> 100
+        0 -> 1023
+        The value you want to send is calculated by (distance * 1023)/stroke
+        where distance is intended distance and stroke is max extension length, 
+        all values in mm. Round to nearest integer
+
+        @param int setPos: position to set stage to.
 
         @return int: error code (0:OK, -1:error)
         """
         self.setPos = setPos
+
+        return 0
     
     def update(self):
+        """
+        Simmulates the LAC moving.
+        """
         if (self.setPos > self.position):
             self.position = self.position + .1
         elif (self.setPos < self.position):
@@ -82,8 +83,7 @@ class LACDummy(Base, MotorInterface, ProcessControlInterface):
                                 If nothing is passed, then from each axis the
                                 position is asked.
 
-        @return dict: with keys being the axis labels and item the current
-                      position.
+        @return int position: position of dummy LAC
         """
         return self.position
 
@@ -109,7 +109,7 @@ class LACDummy(Base, MotorInterface, ProcessControlInterface):
 
 
     def get_control_unit(self, channel=None):
-        """ Return the unit that the value is set in as a tuple of ('abbreviation', 'full unit name')
+        """ Return the unit that the value is set in as a tuple of ('abbreviation', 'full unit name'). NOT IMPLEMENTED FOR LAC
 
         @param (int) channel: (Optional) The number of the channel
 
@@ -138,7 +138,7 @@ class LACDummy(Base, MotorInterface, ProcessControlInterface):
 
 
     def get_constraints(self):
-        """ Retrieve the hardware constrains from the motor device.
+        """ Retrieve the hardware constrains from the motor device. NOT IMPLEMENTED FOR LAC
 
         @return dict: dict with constraints for the magnet hardware. These
                       constraints will be passed via the logic to the GUI so
@@ -201,7 +201,7 @@ class LACDummy(Base, MotorInterface, ProcessControlInterface):
 
 
     def move_rel(self,  param_dict):
-        """ Moves stage in given direction (relative movement)
+        """ Moves stage in given direction (relative movement) NOT IMPLEMENTED FOR LAC
 
         @param dict param_dict: dictionary, which passes all the relevant
                                 parameters, which should be changed. Usage:
@@ -221,7 +221,7 @@ class LACDummy(Base, MotorInterface, ProcessControlInterface):
 
         @return int: error code (0:OK, -1:error)
         """
-        pass
+        return 0
 
 
     def get_status(self, param_list=None):

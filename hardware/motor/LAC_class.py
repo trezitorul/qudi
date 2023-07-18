@@ -1,4 +1,11 @@
-# https://github.com/DamnedFacts/actuonix-lac
+"""
+Preixisiting LAC class file.
+
+The LAC hardware module implements these methods.
+
+https://github.com/DamnedFacts/actuonix-lac
+
+"""
 import struct
 import usb.core
 import  usb.backend.libusb1
@@ -178,10 +185,3 @@ class LAC:
     # to factory default
     def reset(self):
         self.send_data(self.RESET)
-        
-#lac = LAC()
-#lac.reset()
-#setPos=0.02*1023
-#time.sleep(1)
-#lac.set_accuracy(value=0)
-#lac.set_position(int(setPos))

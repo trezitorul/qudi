@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-A module for controlling processes via PID regulation.
+A module for controlling processes via PID regulation. Modifies preexisting PID module to function with LAC and powermeter.
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ from core.configoption import ConfigOption
 from core.statusvariable import StatusVar
 
 
-class SoftPIDController(GenericLogic, PIDControllerInterface):
+class ModPIDController(GenericLogic, PIDControllerInterface):
     """
     Control a process via software PID.
     """
@@ -42,15 +42,20 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
     # config opt
     timestep = ConfigOption(default=100)
+    dummy = ConfigOption(default=True)
 
     # status vars
     kP = StatusVar(default=1)
     kI = StatusVar(default=1)
     kD = StatusVar(default=1)
-    setpoint = StatusVar(default=273.15)
+    setpoint = StatusVar(default=50)
     manualvalue = StatusVar(default=0)
 
     sigNewValue = QtCore.Signal(float)
+    sigUpdate = QtCore.Signal()
+    sigUpdatePIDDisplay = QtCore.Signal(bool)
+    sigStartPID = QtCore.Signal()
+    sigStopPID = QtCore.Signal()
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
@@ -68,9 +73,12 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
     def on_activate(self):
         """ Initialisation performed during activation of the module.
         """
+        self.sigStartPID.connect(self.startLoop)
+        self.sigStopPID.connect(self.stopLoop)
+
         self._process = self.process()
         self._control = self.control()
-
+        self.relErr=0.05
         self.previousdelta = 0
         self.cv = self._control.get_control_value()
 
@@ -80,6 +88,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         self.timer.timeout.connect(self._calcNextStep, QtCore.Qt.QueuedConnection)
         self.sigNewValue.connect(self._control.set_control_value)
+        # self.sigUpdate.connect(self._control.update)
 
         self.history = np.zeros([3, 5])
         self.savingState = False
@@ -87,7 +96,10 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
         self.integrated = 0
         self.countdown = 2
 
-        self.timer.start(self.timestep)
+        self.kP=0.05 #OK
+        self.kI=0
+        self.kD=0.01
+
 
     def on_deactivate(self):
         """ Perform required deactivation.
@@ -105,8 +117,10 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         if self.countdown > 0:
             self.countdown -= 1
+            # print(self.setpoint)
+            # print(self.pv)
             self.previousdelta = self.setpoint - self.pv
-            print('Countdown: ', self.countdown)
+            # print('Countdown: ', self.countdown)
         elif self.countdown == 0:
             self.countdown = -1
             self.integrated = 0
@@ -114,13 +128,19 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
 
         if self.enable:
             delta = self.setpoint - self.pv
+            if (abs(delta)/self.pv)<=self.relErr:
+                delta=0
+            # print("Delta "+str(delta))
             self.integrated += delta
             ## Calculate PID controller:
             self.P = self.kP * delta
+            # print("kP "+ str(self.kP))
+            # print("P "+str(self.P))
             self.I = self.kI * self.timestep * self.integrated
             self.D = self.kD / self.timestep * (delta - self.previousdelta)
 
             self.cv += self.P + self.I + self.D
+            # print(self.cv)
             self.previousdelta = delta
 
             ## limit contol output to maximum permissible limits
@@ -135,6 +155,7 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
             self.history[1, -1] = self.cv
             self.history[2, -1] = self.setpoint
             self.sigNewValue.emit(self.cv)
+            self.sigUpdate.emit()
         else:
             self.cv = self.manualvalue
             limits = self._control.get_control_limit()
@@ -143,17 +164,31 @@ class SoftPIDController(GenericLogic, PIDControllerInterface):
             if self.cv < limits[0]:
                 self.cv = limits[0]
             self.sigNewValue.emit(self.cv)
+            self.sigUpdate.emit()
 
         self.timer.start(self.timestep)
+        # self._process.set_power(self._control.get_pos())
+        self.sigUpdatePIDDisplay.emit(True)
 
     def startLoop(self):
         """ Start the control loop. """
-        self.countdown = 2
+        if(not self.enable):
+            self.timer.start(self.timestep)
+            self.countdown = 2
+        else:
+            pass
 
     def stopLoop(self):
         """ Stop the control loop. """
-        self.countdown = -1
-        self.enable = False
+        if(self.enable):
+            try:
+                self.timer.stop()
+            except:
+                pass
+            self.countdown = -1
+            self.enable = False
+        else:
+            pass
 
     def getSavingState(self):
         """ Find out if we are keeping data for saving later.

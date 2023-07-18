@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
+LAC hardware module using motor interface and process control interface (for PID).
+
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -26,19 +28,18 @@ from hardware.motor.LAC_class import LAC
 
 
 class LACHardware(Base, MotorInterface, ProcessControlInterface):
-    # def __init__(self):
-    #     super().__init__()
-    
     
     def on_activate(self):
+        """ Initialisation performed during activation of the module.
+        """
         self._LAC = LAC()
+
         # Reset the LAC
         self._LAC.reset()
         self._LAC.set_accuracy(value=0)
         self._LAC.set_movement_threshold(value=0)
         self._LAC.set_proportional_gain(100)
         self._LAC.set_derivative_gain(1)
-        # self._LAC.set_accuracy(value=0)
 
         # Set position to last position?
         # self.position = self.get_pos()
@@ -46,27 +47,28 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
 
 
     def on_deactivate(self):
+        """ Deinitialisation performed during deactivation of the module.
+        """
         pass
 
-    
-    # 0 -> 100
-    # 0 -> 1023
-    # The value you want to send is calculated by (distance * 1023)/stroke
-    # where distance is intended distance and stroke is max extension length, 
-    # all values in mm. Round to nearest integer
+
     def move_abs(self, position):
         """ Moves stage to absolute position (absolute movement)
 
-        @param dict param_dict: dictionary, which passes all the relevant
-                                parameters, which should be changed. Usage:
-                                 {'axis_label': <the-abs-pos-value>}.
-                                 'axis_label' must correspond to a label given
-                                 to one of the axis.
+        0 -> 100
+        0 -> 1023
+        The value you want to send is calculated by (distance * 1023)/stroke
+        where distance is intended distance and stroke is max extension length, 
+        all values in mm. Round to nearest integer
+
+        @param int setPos: position to set stage to.
 
         @return int: error code (0:OK, -1:error)
         """
         print(str(int(position / 100 * 1023)))
         self._LAC.set_position(int(position / 100 * 1023))
+
+        return 0
 
 
     def get_pos(self, param_list=None):
@@ -78,8 +80,7 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
                                 If nothing is passed, then from each axis the
                                 position is asked.
 
-        @return dict: with keys being the axis labels and item the current
-                      position.
+        @return int position: position of dummy LAC
         """
         position = self._LAC.get_feedback()
         
@@ -112,6 +113,8 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
     def get_control_unit(self, channel=None):
         """ Return the unit that the value is set in as a tuple of ('abbreviation', 'full unit name')
 
+        NOT IMPLEMENTED FOR LAC
+
         @param (int) channel: (Optional) The number of the channel
 
         @return: The unit as a tuple of ('abbreviation', 'full unit name')
@@ -140,6 +143,8 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
 
     def get_constraints(self):
         """ Retrieve the hardware constrains from the motor device.
+
+        NOT IMPLEMENTED FOR LAC
 
         @return dict: dict with constraints for the magnet hardware. These
                       constraints will be passed via the logic to the GUI so
@@ -222,11 +227,13 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
 
         @return int: error code (0:OK, -1:error)
         """
-        pass
+        return 0
 
 
     def get_status(self, param_list=None):
         """ Get the status of the position
+
+        NOT IMPLEMENTED
 
         @param list param_list: optional, if a specific status of an axis
                                 is desired, then the labels of the needed
@@ -241,6 +248,8 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
 
     def calibrate(self, param_list=None):
         """ Calibrates the stage.
+
+        NOT IMPLEMENTED
 
         @param dict param_list: param_list: optional, if a specific calibration
                                 of an axis is desired, then the labels of the
@@ -260,6 +269,8 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
     def get_velocity(self, param_list=None):
         """ Gets the current velocity for all connected axes.
 
+        NOT IMPLEMENTED
+
         @param dict param_list: optional, if a specific velocity of an axis
                                 is desired, then the labels of the needed
                                 axis should be passed as the param_list.
@@ -273,6 +284,8 @@ class LACHardware(Base, MotorInterface, ProcessControlInterface):
 
     def set_velocity(self, param_dict):
         """ Write new value for velocity.
+
+        NOT IMPLEMENTED
 
         @param dict param_dict: dictionary, which passes all the relevant
                                 parameters, which should be changed. Usage:
