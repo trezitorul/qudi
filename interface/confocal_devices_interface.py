@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Interface file for simple data acquisition.
+Interface file for Thorlabs APT Piezo. (Was intended to be used for other devices as well but 
+currently is only implemented for the piezo.)
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -1,3 +1,26 @@
+# -*- coding: utf-8 -*-
+
+"""
+A module for controlling a specific confocal scanner setup. It is used as a bridge between
+the standard confocal scanner logic and the specific hardware devices.
+
+Qudi is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Qudi is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Qudi. If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
+top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
+"""
+
 import numpy as np
 import time
 
@@ -8,6 +31,10 @@ from interface.confocal_scanner_interface import ConfocalScannerInterface
 
 
 class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
+    """
+    Control multiple hardware devices to perform a confocal scan.
+    """
+
     # connectors
     m=1
     um=1e-6*m
@@ -23,7 +50,6 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
 
-        # Internal parameters
 
     def on_activate(self):
         """ Initialisation performed during activation of the module.
@@ -76,7 +102,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
     def set_position_range(self, myrange=None):
         """ Sets the physical range of the scanner.
 
-        Deprecated : This range should not be accessible by logic. TODO: Discuss and remove from interface ?
+        Deprecated : This range should not be accessible by logic. Inherited from interface.
 
         @param float [N][2] myrange: array of N ranges with an array containing lower and upper limit
 
@@ -88,7 +114,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
     def set_voltage_range(self, myrange=None):
         """ Sets the voltage range of the NI Card.
 
-        Deprecated : This range should not be accessible by logic. TODO: Discuss and remove from interface ?
+        Deprecated : This range should not be accessible by logic. Inherited from interface.
 
         @param float [2] myrange: array containing lower and upper limit
 
@@ -126,9 +152,6 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
         @param float clock_frequency: if defined, this sets the frequency of the clock
         @param str clock_channel: if defined, this is the physical channel of the clock
 
-        TODO: the clock_channel argument is unused and should not be known by the logic.
-        TODO: Discuss and remove from interface ?
-
         @return int: error code (0:OK, -1:error)
         """
         if clock_frequency is not None:
@@ -141,7 +164,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
                        sources=None,
                        clock_channel=None,
                        scanner_ao_channels=None):
-        """ Configures the actual scanner with a given clock.
+        """ Configures the actual scanner (does not use the clock variables, but they are inherited from the interface).
 
         @param str counter_channels: if defined, these are the physical counting devices
         @param str sources: if defined, these are the physical channels where
@@ -152,15 +175,13 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
                                         output channels
 
         @return int: error code (0:OK, -1:error)
-
-        TODO: Again, should the multiple clocks controlled by logic be in this interface ?
         """
         self._mirrors.set_mode('off', 1)
         self._mirrors.set_mode('off', 2)
         return 0
 
     def scanner_set_position(self, x=None, y=None, z=None, a=None):
-        """ Move stage to x, y, z, a (where a is the fourth channel).
+        """ Move stage to x, y, z, a (inherited from interface, a is not used).
 
         @param float x: position in x-direction (in axis unit)
         @param float y: position in y-direction (in axis unit)
@@ -190,15 +211,11 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
         """ Scans a line and returns the counts on that line.
 
         @param float[k][n] line_path: array k of n-part tuples defining the pixel positions
-        @param bool pixel_clock: whether we need to output a pixel clock for this line
-
-        TODO: Give a detail explanation of pixel_clock argument, how it is used in practice and why it is necessary.
+        @param bool pixel_clock: whether we need to output a pixel clock for this line >> NOT USED, inherited from interface
 
         @return float[k][m]: the photon counts per second for k pixels with m channels
         """
         result = [[0 for y in range(2)] for x in range(len(line_path[0]))]
-        # print(np.shape(line_path))
-        # print(np.shape(result))
 
         for k in range(len(line_path[0])):
             count1 = 0
@@ -213,7 +230,7 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
 
     def _set_up_line(self, length=100):
-        """ Sets up the analoque output for scanning a line.
+        """ Sets up the analogue output for scanning a line.
 
         @param int length: length of the line in pixel
 
@@ -222,7 +239,6 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
 
         self._line_length = length
 
-#        self.log.debug('ConfocalScannerInterfaceDummy>set_up_line')
         return 0
 
 
@@ -230,8 +246,6 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
         """ Closes the scanner and cleans up afterwards.
 
         @return int: error code (0:OK, -1:error)
-
-        TODO: Give a detail explanation how it is used in practice and why it is necessary.
         """
         return self.reset_hardware()
 
@@ -239,82 +253,5 @@ class MultConfocalLogic(GenericLogic, ConfocalScannerInterface):
         """ Closes the clock and cleans up afterwards.
 
         @return int: error code (0:OK, -1:error)
-
-        TODO: Give a detail explanation how it is used in practice and why it is necessary.
         """
         return 0
-
-############################################################################
-#                                                                          #
-#    the following two functions are needed to fluoreschence signal        #
-#                             of the dummy NVs                             #
-#                                                                          #
-############################################################################
-
-
-    def twoD_gaussian_function(self, x_data_tuple=None, amplitude=None,
-                               x_zero=None, y_zero=None, sigma_x=None,
-                               sigma_y=None, theta=None, offset=None):
-
-        #FIXME: x_data_tuple: dimension of arrays
-
-        """ This method provides a two dimensional gaussian function.
-
-        @param (k,M)-shaped array x_data_tuple: x and y values
-        @param float or int amplitude: Amplitude of gaussian
-        @param float or int x_zero: x value of maximum
-        @param float or int y_zero: y value of maximum
-        @param float or int sigma_x: standard deviation in x direction
-        @param float or int sigma_y: standard deviation in y direction
-        @param float or int theta: angle for eliptical gaussians
-        @param float or int offset: offset
-
-        @return callable function: returns the function
-
-        """
-        # check if parameters make sense
-        #FIXME: Check for 2D matrix
-        if not isinstance( x_data_tuple,(frozenset, list, set, tuple, np.ndarray)):
-            self.log.error('Given range of axes is no array type.')
-
-        parameters = [amplitude, x_zero, y_zero, sigma_x, sigma_y, theta, offset]
-        for var in parameters:
-            if not isinstance(var, (float, int)):
-                self.log.error('Given range of parameter is no float or int.')
-
-        (x, y) = x_data_tuple
-        x_zero = float(x_zero)
-        y_zero = float(y_zero)
-
-        a = (np.cos(theta)**2) / (2 * sigma_x**2) + (np.sin(theta)**2) / (2 * sigma_y**2)
-        b = -(np.sin(2 * theta)) / (4 * sigma_x**2) + (np.sin(2 * theta)) / (4 * sigma_y**2)
-        c = (np.sin(theta)**2) / (2 * sigma_x**2) + (np.cos(theta)**2) / (2 * sigma_y**2)
-        g = offset + amplitude * np.exp(
-            - (a * ((x - x_zero)**2)
-                + 2 * b * (x - x_zero) * (y - y_zero)
-                + c * ((y - y_zero)**2)))
-        return g.ravel()
-
-    def gaussian_function(self, x_data=None, amplitude=None, x_zero=None,
-                          sigma=None, offset=None):
-        """ This method provides a one dimensional gaussian function.
-
-        @param array x_data: x values
-        @param float or int amplitude: Amplitude of gaussian
-        @param float or int x_zero: x value of maximum
-        @param float or int sigma: standard deviation
-        @param float or int offset: offset
-
-        @return callable function: returns a 1D Gaussian function
-
-        """
-        # check if parameters make sense
-        if not isinstance( x_data,(frozenset, list, set, tuple, np.ndarray)):
-            self.log.error('Given range of axis is no array type.')
-
-        parameters=[amplitude,x_zero,sigma,offset]
-        for var in parameters:
-            if not isinstance(var, (float, int)):
-                self.log.error('Given range of parameter is no float or int.')
-        gaussian = amplitude*np.exp(-(x_data-x_zero)**2/(2*sigma**2))+offset
-        return gaussian
