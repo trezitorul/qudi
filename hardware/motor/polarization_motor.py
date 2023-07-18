@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
+Hardware module for the polarization motor
+
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -23,17 +25,11 @@ from interface.motor_interface import MotorInterface
 from interface.process_control_interface import ProcessControlInterface
 from core.module import Base
 
-import os
 import time
-import logging
 import sys
 import clr
-# import matplotlib.pyplot as plt
-# from scipy import signal
 from core.configoption import ConfigOption
-import numpy as np
 from ctypes import *
-# from System import Decimal
 
 sys.path.append(r"C:\\Program Files\\Thorlabs\\Kinesis")
 clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.DeviceManagerCLI.dll")
@@ -52,37 +48,46 @@ class PolarizationMotor(Base):
     """ Hardware module for polarization motor.
     """
 
-    _deviceID = ConfigOption(name='deviceID', missing='error')
-    _maxvelocity = ConfigOption(name='maxvelocity', missing='error')
+    device_ID = ConfigOption(name='device_ID', missing='error')
+    max_velocity = ConfigOption(name='max_velocity', missing='error')
 
 
     def on_activate(self):
-        self.deviceID = self._deviceID
-        self.maxvelocity = self._maxvelocity
+        """ On activation of the module
+        """
+        self._device_ID = self.device_ID
+        self._max_velocity = self.max_velocity
+        
         self.position = 0
-
-        self._polarMotor = self.setup_device(self.deviceID)
+        self.polar_potor = self.setup_device(self._device_ID)
 
         self.home_motor()
-        self.set_velocity(self.maxvelocity)
+        self.set_velocity(self._max_velocity)
         
     
     def on_deactivate(self):
-            pass
+        """ When the module is deactivated
+        """
+        pass
 
 
-    def setup_device(self,deviceID):
-        '''
-        Create motors
-        '''
+    def setup_device(self,device_ID):
+        """ Setting up the device
+
+        Args:
+            device_ID (str): device ID
+
+        Returns:
+            KCubeDCServo.CreateKCubeDCServo: the polar motor object
+        """
         DeviceManagerCLI.BuildDeviceList()
-        self.device = KCubeDCServo.CreateKCubeDCServo(self.deviceID)
-        self.device.Connect(self.deviceID)
+        self.device = KCubeDCServo.CreateKCubeDCServo(self.device_ID)
+        self.device.Connect(self.device_ID)
         self.device.StartPolling(1)
         time.sleep(0.25)
         self.device.EnableDevice()
         time.sleep(0.25)
-        self.config = self.device.LoadMotorConfiguration(deviceID)
+        self.config = self.device.LoadMotorConfiguration(device_ID)
         self.config.DeviceSettingsName = "MTS25"
         self.config.UpdateCurrentConfiguration()
 
@@ -90,22 +95,36 @@ class PolarizationMotor(Base):
 
 
     def set_position(self, degree):
-        '''
-        turn the motor to the desired degree
-        '''
+        """ Turn the motor to the desired degree
+
+        Args:
+            degree (float): desired degree
+        """
         self.device.MoveTo(Decimal(float(degree)), 10000)
         self.position = Decimal.ToDouble(self.device.Position)
 
     
     def get_position(self):
+        """Get the current angle
+
+        Returns:
+            float: current angle
+        """
         return Decimal.ToDouble(self.device.Position)
 
 
     def home_motor(self):
+        """ Home the motor
+        """
         self.device.Home(60000)
 
     
     def set_velocity(self, max_velocity):
+        """Set the velocity of the motor
+
+        Args:
+            max_velocity (float): max velocity
+        """
         velparams = self.device.GetVelocityParams()
-        velparams.MaxVelocity = Decimal(float(max_velocity))
+        velparams._Max_Velocity = Decimal(float(max_velocity))
         self.device.SetVelocityParams(velparams)

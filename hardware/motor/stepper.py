@@ -1,3 +1,7 @@
+""" 
+Communicating serially to the stepper driver
+"""
+
 import time
 
 
@@ -17,15 +21,25 @@ class Stepper():
         self.motor_pin_3 = motor_pin_3
         self.motor_pin_4 = motor_pin_4
 
-        # pin_count is used by the stepMotor() method:
+        # pin_count is used by the step_motor() method:
         self.pin_count = 4
 
 
-    def setSpeed(self, whatSpeed):
-        self.step_delay = 60 * 1000 * 1000 / self.number_of_steps / whatSpeed
+    def set_speed(self, what_speed):
+        """Set speed of the motor
+
+        Args:
+            what_speed (float): speed of the motor
+        """
+        self.step_delay = 60 * 1000 * 1000 / self.number_of_steps / what_speed
 
 
     def step(self, steps_to_move):
+        """ Stepping the motor by a number of steps
+
+        Args:
+            steps_to_move (int): steps to move
+        """
         step_left = abs(steps_to_move)
         if (steps_to_move > 0): self.direction = 1
         if (steps_to_move < 0): self.direction = 0
@@ -46,26 +60,31 @@ class Stepper():
                     
                 step_left -= 1
                 
-                self.stepMotor(self.step_numer % 4)
+                self.step_motor(self.step_numer % 4)
     
 
-    def stepMotor(self, thisStep):
-        if (thisStep == 0):
+    def step_motor(self, this_step):
+        """ Communicating the driver to step the motor
+
+        Args:
+            this_step (int): how many steps
+        """
+        if (this_step == 0):
             self.board.digital[self.motor_pin_1].write(1)
             self.board.digital[self.motor_pin_2].write(0)
             self.board.digital[self.motor_pin_3].write(1)
             self.board.digital[self.motor_pin_4].write(0)
-        elif (thisStep == 1):
+        elif (this_step == 1):
             self.board.digital[self.motor_pin_1].write(0)
             self.board.digital[self.motor_pin_2].write(1)
             self.board.digital[self.motor_pin_3].write(1)
             self.board.digital[self.motor_pin_4].write(0)
-        elif (thisStep == 2):
+        elif (this_step == 2):
             self.board.digital[self.motor_pin_1].write(0)
             self.board.digital[self.motor_pin_2].write(1)
             self.board.digital[self.motor_pin_3].write(0)
             self.board.digital[self.motor_pin_4].write(1)
-        elif (thisStep == 3):
+        elif (this_step == 3):
             self.board.digital[self.motor_pin_1].write(1)
             self.board.digital[self.motor_pin_2].write(0)
             self.board.digital[self.motor_pin_3].write(0)

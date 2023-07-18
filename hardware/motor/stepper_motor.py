@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
+Hardware module for the stepper motor
+
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -18,115 +20,79 @@ Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
 top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
 """
 
-from PyQt5.QtCore import QObject
 from core.module import Base
 from hardware.motor.stepper import Stepper
 from core.configoption import ConfigOption
 
 
 class StepperMotor (Base):
-    # def __init__(self):
-    #     super().__init__()
-    _motor_pin_1 = ConfigOption(name='motor_pin_1', missing='error')
-    _motor_pin_2 = ConfigOption(name='motor_pin_2', missing='error')
-    _motor_pin_3 = ConfigOption(name='motor_pin_3', missing='error')
-    _motor_pin_4 = ConfigOption(name='motor_pin_4', missing='error')
-    
+    motor_pin_1 = ConfigOption(name='motor_pin_1', missing='error')
+    motor_pin_2 = ConfigOption(name='motor_pin_2', missing='error')
+    motor_pin_3 = ConfigOption(name='motor_pin_3', missing='error')
+    motor_pin_4 = ConfigOption(name='motor_pin_4', missing='error')
     
     def on_activate(self):
+        """ On activate
+        """
         pass
 
+
     def initialize(self, board):
+        """Initialization of the stepper driver board
+
+        Args:
+            board (pyfirmata.Arduino): the Arduino controller board
+        """
         self.board = board
         self.stepsPerRevolution = 2048
         self.rpm = 12
         self.position = 0
 
-        self._Stepper = Stepper(self.board, self.stepsPerRevolution, self._motor_pin_1, self._motor_pin_3, self._motor_pin_2, self._motor_pin_4)
-        self._Stepper.setSpeed(self.rpm)
+        self._Stepper = Stepper(self.board, self.stepsPerRevolution, self.motor_pin_1, self.motor_pin_3, self.motor_pin_2, self.motor_pin_4)
+        self._Stepper.set_speed(self.rpm)
+
 
     def on_deactivate(self):
-        # self.move_abs(0)
-        return
-
-    
-    def move_abs(self, revolution):
-        """ Moves stage to absolute revolution (absolute movement)
-
-        @param dict param_dict: dictionary, which passes all the relevant
-                                parameters, which should be changed. Usage:
-                                 {'axis_label': <the-abs-pos-value>}.
-                                 'axis_label' must correspond to a label given
-                                 to one of the axis.
-
-        @return int: error code (0:OK, -1:error)
+        """On deactivate
         """
-        # if (revolution > 0):
-        #     self._Stepper.step(revolution - self.revolution)
-        #     self.revolution = revolution
-        #     return 0
-        # else: return -1
-        pass
+        return
 
 
     def move_rel(self,  direction, step=1):
-        """ Moves stage in given direction (relative movement)
+        """Moves stage in given direction (relative movement)
 
-        @param dict param_dict: dictionary, which passes all the relevant
-                                parameters, which should be changed. Usage:
-                                 {'axis_label': <the-abs-pos-value>}.
-                                 'axis_label' must correspond to a label given
-                                 to one of the axis.
+        Args:
+            direction (int): 1 corresponds to up/right; -1 corresponds to down/left
+            step (int, optional): number of steps. Defaults to 1.
 
-        A smart idea would be to ask the position after the movement.
-
-        @return int: error code (0:OK, -1:error)
         """
-
         self._Stepper.step(step * direction)
         self.position += step * direction
 
 
     def get_pos(self):
-        """ Gets current position of the stage arms
+        """Get current position
 
-        @param list param_list: optional, if a specific position of an axis
-                                is desired, then the labels of the needed
-                                axis should be passed in the param_list.
-                                If nothing is passed, then from each axis the
-                                position is asked.
-
-        @return dict: with keys being the axis labels and item the current
-                      position.
+        Returns:
+            int: current position
         """
         return self.position
 
 
     def get_rpm(self):
-        """ Gets the current velocity for all connected axes.
+        """ Gets the current rpm for all connected axes.
 
-        @param dict param_list: optional, if a specific velocity of an axis
-                                is desired, then the labels of the needed
-                                axis should be passed as the param_list.
-                                If nothing is passed, then from each axis the
-                                velocity is asked.
-
-        @return dict : with the axis label as key and the velocity as item.
+        @return int : Current rpm
         """
         return self.rpm
 
 
     def set_rpm(self, rpm):
-        """ Write new value for velocity.
+        """Set the rpm of the motor
 
-        @param dict param_dict: dictionary, which passes all the relevant
-                                parameters, which should be changed. Usage:
-                                 {'axis_label': <the-velocity-value>}.
-                                 'axis_label' must correspond to a label given
-                                 to one of the axis.
-
-        @return int: error code (0:OK, -1:error)
+        Args:
+            rpm (int): round-per-minute
         """
-        self._Stepper.setSpeed(rpm)
+        self._Stepper.set_speed(rpm)
         self.rpm = rpm
 

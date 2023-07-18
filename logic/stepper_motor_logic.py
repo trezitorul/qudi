@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Buffer for simple data
+Logic module for the stepper motor
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@ Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
 top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
 """
 
-import numpy as np
 import time
 
 from core.connector import Connector
@@ -33,111 +32,112 @@ class StepperMotorLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
-    stepperMotor1 = Connector(interface='StepperMotor')
-    stepperMotor2 = Connector(interface='StepperMotor')
+    stepper_motor_1 = Connector(interface='StepperMotor')
+    stepper_motor_2 = Connector(interface='StepperMotor')
     com_port = ConfigOption(name='com_port', missing='error')
-    queryInterval = ConfigOption('query_interval', 100)
+    query_interval = ConfigOption('query_interval', 100)
 
     # signals
-    sigUpdateDisplay = QtCore.Signal()
+    sig_update_display = QtCore.Signal()
 
     def on_activate(self):
         """ Prepare logic module for work.
         """
         self.board = pyfirmata.Arduino(self.com_port)
-        self._stepperMotor1 = self.stepperMotor1()
-        self._stepperMotor2 = self.stepperMotor2()
+        self._stepper_motor_1 = self.stepper_motor_1()
+        self._stepper_motor_2 = self.stepper_motor_2()
 
-        self._stepperMotor1.initialize(self.board)
-        self._stepperMotor2.initialize(self.board)
-        self.stopRequest = False
+        self._stepper_motor_1.initialize(self.board)
+        self._stepper_motor_2.initialize(self.board)
+        self.stop_request = False
         self.position = (0, 0)
         self.rpm = 12
 
         # delay timer for querying hardware
-        self.queryTimer = QtCore.QTimer()
-        self.queryTimer.setInterval(self.queryInterval)
-        self.queryTimer.setSingleShot(True)
-        self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
+        self.query_timer = QtCore.QTimer()
+        self.query_timer.setInterval(self.query_interval)
+        self.query_timer.setSingleShot(True)
+        self.query_timer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
 
         self.start_query_loop()
+
 
     def on_deactivate(self):
         """ Deactivate modeule.
         """
         self.stop_query_loop()
         for i in range(5):
-            time.sleep(self.queryInterval / 1000)
+            time.sleep(self.query_interval / 1000)
             QtCore.QCoreApplication.processEvents()
+
 
     @QtCore.Slot()
     def start_query_loop(self):
         """ Start the readout loop. """
         self.module_state.run()
-        self.queryTimer.start(self.queryInterval)
+        self.query_timer.start(self.query_interval)
+
 
     @QtCore.Slot()
     def stop_query_loop(self):
         """ Stop the readout loop. """
-        self.stopRequest = True
+        self.stop_request = True
         for i in range(10):
-            if not self.stopRequest:
+            if not self.stop_request:
                 return
             QtCore.QCoreApplication.processEvents()
-            time.sleep(self.queryInterval/1000)
-    
+            time.sleep(self.query_interval/1000)
+
+
     @QtCore.Slot()
     def check_loop(self):
         """ Get position and update display. """
-        if self.stopRequest:
+        if self.stop_request:
             if self.module_state.can('stop'):
                 self.module_state.stop()
-            self.stopRequest = False
+            self.stop_request = False
             return
-        qi = self.queryInterval
+        qi = self.query_interval
         try:
-            self.position = self.getPosition()
+            self.position = self.get_position()
 
         except:
             qi = 3000
             self.log.exception("Exception in stepper motor status loop, throttling refresh rate.")
 
-        self.queryTimer.start(qi)
-        self.sigUpdateDisplay.emit()
-
-    def move_abs(self, revolution=None):
-        """
-        :param position: Output position relative to zero position; sets as an integer in the range 
-                         from 0 to 32767, correspond to 0-100% of piezo extension aka maxTravel.
-        :param bay: Index (0-based) of controller bay to send the command.
-        :param channel: Index (0-based) of controller bay channel to send the command.
-        """
-    
-        self._stepperMotor.move_abs(revolution)
+        self.query_timer.start(qi)
+        self.sig_update_display.emit()
 
     
     def move_rel(self, axis, direction, step=1):
-        if (axis == 0): self._stepperMotor1.move_rel(direction, step)
-        if (axis == 1): self._stepperMotor2.move_rel(direction, step)
+        """Move the motor relatively
 
-
-
-    def getPosition(self):
+        Args:
+            axis (int): 01 corresponds to xy
+            direction (int): -1 corresponds to up/right; 1 corresponds to down/left
+            step (int, optional): numeber of steps. Defaults to 1.
         """
-        Get position of the piezo as an integer in the range from 0 to 32767, correspond 
-        to 0-100% of piezo extension aka maxTravel.
-        Units: microns
+        if (axis == 0): self._stepper_motor_1.move_rel(direction, step)
+        if (axis == 1): self._stepper_motor_2.move_rel(direction, step)
 
-        :param bay: Index (0-based) of controller bay to send the command.
-        :param channel: Index (0-based) of controller bay channel to send the command.
+
+    def get_position(self):
+        """ Get the current coordinates
+
+        Returns:
+            tuple: (X, y)
         """
-
-        positionX = self._stepperMotor1.get_pos()
-        positionY = self._stepperMotor2.get_pos()
+        positionX = self._stepper_motor_1.get_pos()
+        positionY = self._stepper_motor_2.get_pos()
         return (positionX, positionY)
     
 
-    def setRPM(self, rpm):
-        self._stepperMotor1.set_rpm(rpm)
-        self._stepperMotor2.set_rpm(rpm)
+    def set_rpm(self, rpm):
+        """Set the rpm
+
+        Args:
+            rpm (float): round-per-minute
+        """
+        self._stepper_motor_1.set_rpm(rpm)
+        self._stepper_motor_2.set_rpm(rpm)
         self.rpm = rpm

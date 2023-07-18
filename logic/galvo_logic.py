@@ -332,12 +332,12 @@ class GalvoLogic(GenericLogic):
         measured_max_voltage_X = self.get_diff_voltage(self.theta_high, self.theta_low)
         measured_max_voltage_Y = self.get_diff_voltage(self.phi_high, self.phi_low)
         phi = measured_max_voltage_X / (self.VToA)
-        maxY=math.tan(math.radians(phi)) * self.projection_distance
+        max_Y=math.tan(math.radians(phi)) * self.projection_distance
         theta = measured_max_voltage_Y / (self.VToA)
-        maxX=math.tan(math.radians(theta)) * self.projection_distance
+        max_X=math.tan(math.radians(theta)) * self.projection_distance
         # print("GALVO MAX TRAVEL")
-        # print([[-maxX, maxX], [-maxY,maxY]])
-        self.pos_range = [[-maxX, maxX], [-maxY,maxY]]
+        # print([[-max_X, max_X], [-max_Y,max_Y]])
+        self.pos_range = [[-max_X, max_X], [-max_Y,max_Y]]
 
     def get_position_range(self): 
         """get the position range
