@@ -29,7 +29,7 @@ class StepperGUI(GUIBase):
     """
     
     # CONNECTORS #############################################################
-    stepperlogic = Connector(interface='StepperMotorLogic')
+    stepper_logic = Connector(interface='StepperMotorLogic')
 
     def on_deactivate(self):
         """ Reverse steps of activation
@@ -45,14 +45,14 @@ class StepperGUI(GUIBase):
         """
 
         # CONNECTORS PART 2 ###################################################
-        self._stepperlogic = self.stepperlogic()
+        self._stepper_logic = self.stepper_logic()
 
         self._mw = StepperMainWindow()
 
         # Set default parameters
         self.position = [0, 0, 0]
         self._mw.StepSize.setValue(1)
-        self.stepSize = 2048
+        self.step_size = 2048
         self.direction = 1
         self.axis = 0
 
@@ -60,8 +60,8 @@ class StepperGUI(GUIBase):
         self.rpm = 12
 
         # Connect buttons to functions        
-        self._mw.StepSize.valueChanged.connect(self.stepChanged)
-        self._mw.rpmInput.valueChanged.connect(self.rpmChanged)
+        self._mw.StepSize.valueChanged.connect(self.step_changed)
+        self._mw.rpmInput.valueChanged.connect(self.rpm_changed)
 
         self._mw.leftButton.installEventFilter(self)  # Install event filter on the button
         self._mw.leftButton.clicked.connect(lambda: self.on_button_clicked(0, -1))
@@ -70,20 +70,29 @@ class StepperGUI(GUIBase):
         self._mw.rightButton.clicked.connect(lambda: self.on_button_clicked(0, 1))
 
         self._mw.upButton.installEventFilter(self)  # Install event filter on the button
-        self._mw.upButton.clicked.connect(lambda: self.on_button_clicked(1, -1))
+        self._mw.upButton.clicked.connect(lambda: self.on_button_clicked(1, 1))
 
         self._mw.downButton.installEventFilter(self)  # Install event filter on the button
-        self._mw.downButton.clicked.connect(lambda: self.on_button_clicked(1, 1))
+        self._mw.downButton.clicked.connect(lambda: self.on_button_clicked(1, -1))
 
         self.mouse_held = False
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_mouse_hold)
 
         # Connect update signal
-        self._stepperlogic.sigUpdateDisplay.connect(self.updateDisplay)
+        self._stepper_logic.sig_update_display.connect(self.update_display)
         self.show()
 
-    def eventFilter(self, obj, event):
+    def event_filter(self, obj, event):
+        """ Filter button clicked or held
+
+        Args:
+            obj (idk): object being pressed/clicked
+            event (idk): event that is happening
+
+        Returns:
+            event_filter: recursively check pressed/clicked
+        """
         if (obj == self._mw.leftButton or obj == self._mw.rightButton
             or obj == self._mw.upButton or obj == self._mw.downButton) and event.type() == QEvent.MouseButtonPress:
             if event.button() == Qt.LeftButton:
@@ -96,38 +105,58 @@ class StepperGUI(GUIBase):
                 self.mouse_held = False
                 self.timer.stop()  # Stop the timer
 
-        return self._mw.eventFilter(obj, event)
+        return self._mw.event_filter(obj, event)
 
 
     def check_mouse_hold(self):
+        """Check if the mouse is being held
+        """
         if self.mouse_held:
             self.move(self.axis, self.direction)
 
 
     def on_button_clicked(self, axis, direction):
+        """ Move the stepper motors when the button is clicked
+
+        Args:
+            axis (int): 01 -> xy
+            direction (int): 1 for up/right; -1 for down/left
+        """
         self.move(axis, direction)
         self.axis = axis
         self.direction = direction
 
 
     def move(self, axis, direction):
-        self._stepperlogic.move_rel(axis, direction, self.stepSize)
+        """Move the motors
+
+        Args:
+            axis (int): 01 -> xy
+            direction (int): 1 for up/right; -1 for down/left
+        """
+        self._stepper_logic.move_rel(axis, direction, self.step_size)
 
 
-    def stepChanged(self):
-        self.stepSize = int(self._mw.StepSize.value() * 2048)
+    def step_changed(self):
+        """ When new step size value is input
+        """
+        self.step_size = int(self._mw.StepSize.value() * 2048)
 
 
-    def rpmChanged(self):
+    def rpm_changed(self):
+        """ Change the rpm speed
+        """
         self.rpm = self._mw.rpmInput.value()
-        self._stepperlogic.setRPM(self.rpm)
+        self._stepper_logic.setRPM(self.rpm)
 
 
-    def updateDisplay(self):
-        self.positionX = self._stepperlogic.position[0]
-        self.positionY = self._stepperlogic.position[1]
-        self._mw.totalStepX.setText(str(self.positionX / 2048))
-        self._mw.totalStepY.setText(str(self.positionY / 2048))
+    def update_display(self):
+        """Update the display
+        """
+        self.position_X = self._stepper_logic.position[0]
+        self.position_Y = self._stepper_logic.position[1]
+        self._mw.totalStepX.setText(str(self.position_X / 2048))
+        self._mw.totalStepY.setText(str(self.position_Y / 2048))
 
 
     def show(self):
