@@ -1,3 +1,7 @@
+"""
+Thorlabs library for powermeter.
+
+"""
 import os
 from ctypes import cdll,c_long,c_uint32,c_uint16,c_uint8,byref,create_string_buffer,c_bool, c_char, c_char_p,c_int,c_int16,c_int8,c_double,c_float,sizeof,c_voidp, Structure
 

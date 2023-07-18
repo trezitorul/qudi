@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 
+PM100D hardware module using visa resource manager.
+
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
