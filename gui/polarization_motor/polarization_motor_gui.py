@@ -29,10 +29,10 @@ class PolarMotordGUI(GUIBase):
     """
     
     # CONNECTORS #############################################################
-    polarlogic = Connector(interface='PolarMotorLogic')
+    polar_logic = Connector(interface='PolarMotorLogic')
 
     # SIGNALS ################################################################
-    sigStartGUI = QtCore.Signal()
+    sig_start_GUI = QtCore.Signal()
 
 
     def __init__(self, config, **kwargs):
@@ -41,7 +41,7 @@ class PolarMotordGUI(GUIBase):
 
     def on_activate(self):
         # CONNECTORS PART 2 ###################################################
-        self._polarlogic = self.polarlogic()
+        self._polar_logic = self.polar_logic()
 
         self._mw = PolarMotorMainWindow()
         
@@ -49,11 +49,11 @@ class PolarMotordGUI(GUIBase):
 
 
         # Connect spin boxes
-        self._mw.inputDegree.valueChanged.connect(self.updatePosition)
-        self._mw.moveButton.clicked.connect(self.setPosInput)
+        self._mw.inputDegree.valueChanged.connect(self.update_position)
+        self._mw.moveButton.clicked.connect(self.set_pos_input)
 
         # Connect signals
-        self._polarlogic.sigUpdatePolarMotorDisplay.connect(self.updateDisplay)
+        self._polar_logic.sig_update_polar_motor_display.connect(self.update_display)
 
 
     def on_deactivate(self):
@@ -63,13 +63,13 @@ class PolarMotordGUI(GUIBase):
         """
         self._mw.close()
 
-    def updatePosition(self):
+    def update_position(self):
         self.posInput = self._mw.inputDegree.value()
 
 
-    def setPosInput(self):
-        self._polarlogic.set_position(self.posInput)
+    def set_pos_input(self):
+        self._polar_logic.set_position(self.posInput)
 
 
-    def updateDisplay(self):
-        self._mw.currDegree.setText(str(self._polarlogic.position))
+    def update_display(self):
+        self._mw.currDegree.setText(str(self._polar_logic.position))
