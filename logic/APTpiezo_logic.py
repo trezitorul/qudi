@@ -32,8 +32,8 @@ class APTpiezoLogic(GenericLogic):
     """ Logic module agreggating multiple hardware switches.
     """
 
-    apt_piezo1 = Connector(interface='ConfocalDevInterface')
-    apt_piezo2 = Connector(interface='ConfocalDevInterface')
+    apt_piezo_1 = Connector(interface='ConfocalDevInterface')
+    apt_piezo_2 = Connector(interface='ConfocalDevInterface')
     query_interval = ConfigOption('query_interval', 100)
 
     position = [0,0,0]
@@ -46,8 +46,8 @@ class APTpiezoLogic(GenericLogic):
     def on_activate(self):
         """ Prepare logic module for work.
         """
-        self._aptpiezo1 = self.apt_piezo1()
-        self._aptpiezo2 = self.apt_piezo2()
+        self._aptpiezo_1 = self.apt_piezo_1()
+        self._aptpiezo_2 = self.apt_piezo_2()
         self.stop_request = False
         self.buffer_length = 100
 
@@ -114,9 +114,9 @@ class APTpiezoLogic(GenericLogic):
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
     
-        self._aptpiezo1.set_position(position=position[0], channel=0)
-        self._aptpiezo1.set_position(position=position[1], channel=1)
-        self._aptpiezo2.set_position(position=position[2], channel=0)
+        self._aptpiezo_1.set_position(position=position[0], channel=0)
+        self._aptpiezo_1.set_position(position=position[1], channel=1)
+        self._aptpiezo_2.set_position(position=position[2], channel=0)
 
 
     def get_position(self , bay=0, channel=0, timeout=10):
@@ -129,5 +129,5 @@ class APTpiezoLogic(GenericLogic):
         :param channel: Index (0-based) of controller bay channel to send the command.
         """
 
-        position = [self._aptpiezo1.get_position(channel=0), self._aptpiezo1.get_position(channel=1), self._aptpiezo2.get_position(channel=0)]
+        position = [self._aptpiezo_1.get_position(channel=0), self._aptpiezo_1.get_position(channel=1), self._aptpiezo_2.get_position(channel=0)]
         return position

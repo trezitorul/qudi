@@ -32,31 +32,46 @@ class LtuneLaserLogic(GenericLogic):
     laser = Connector(interface='LtuneLaser')
     
     # queryInterval = ConfigOption('query_interval', 100)
-    sigUpdateLaserDisplay = QtCore.Signal()
+    sig_update_laser_display = QtCore.Signal()
 
     def on_activate(self):
+        """Activate the module
+        """
         self._laser = self.laser()
 
     
     def on_deactivate(self):
+        """Deactivate the module
+        """
         self.disable_laser()
 
     def enable_laser(self):
+        """ Enable the laser
+        """
         self._laser.enable()
 
     def disable_laser(self):
+        """Disable the laser
+        """
         self._laser.disable()
 
 
     def set_power(self, power):
-        '''
-        turn the motor to the desired degree
-        '''
-        self._laser.set_outputPower(power)
+        """Set the power of the laser
+
+        Args:
+            power (float): Power of the laser
+        """
+        self._laser.set_output_power(power)
         self.power = self._laser.power
-        self.sigUpdateLaserDisplay.emit()
+        self.sig_update_laser_display.emit()
 
 
     def get_power(self):
-        return self._laser.get_outputPower()
+        """Get the current power
+
+        Returns:
+            float: current power
+        """
+        return self._laser.get_output_power()
 

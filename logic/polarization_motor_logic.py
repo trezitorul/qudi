@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Buffer for simple data
+Logic module for polar motor
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@ Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
 top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
 """
 
-import numpy as np
 import time
 
 from core.configoption import ConfigOption
@@ -33,10 +32,10 @@ class PolarMotorLogic(GenericLogic):
     """
 
     pmotor = Connector(interface='PolarizationMotor')
-    queryInterval = ConfigOption('query_interval', 100)
+    query_interval = ConfigOption('query_interval', 100)
     
     # signals
-    sigUpdatePolarMotorDisplay = QtCore.Signal()
+    sig_update_polar_motor_display = QtCore.Signal()
 
     # Connect signals
 
@@ -47,14 +46,14 @@ class PolarMotorLogic(GenericLogic):
 
         self.home_motor()
 
-        self.stopRequest = False
-        self.bufferLength = 100
+        self.stop_request = False
+        self.buffer_length = 100
 
         # delay timer for querying hardware
-        self.queryTimer = QtCore.QTimer()
-        self.queryTimer.setInterval(self.queryInterval)
-        self.queryTimer.setSingleShot(True)
-        self.queryTimer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
+        self.query_timer = QtCore.QTimer()
+        self.query_timer.setInterval(self.query_interval)
+        self.query_timer.setSingleShot(True)
+        self.query_timer.timeout.connect(self.check_loop, QtCore.Qt.QueuedConnection)
 
         self.start_query_loop()
 
@@ -65,7 +64,7 @@ class PolarMotorLogic(GenericLogic):
         """
         self.stop_query_loop()
         for i in range(5):
-            time.sleep(self.queryInterval / 1000)
+            time.sleep(self.query_interval / 1000)
             QtCore.QCoreApplication.processEvents()
 
 
@@ -73,27 +72,29 @@ class PolarMotorLogic(GenericLogic):
     def start_query_loop(self):
         """ Start the readout loop. """
         self.module_state.run()
-        self.queryTimer.start(self.queryInterval)
+        self.query_timer.start(self.query_interval)
+
 
     @QtCore.Slot()
     def stop_query_loop(self):
         """ Stop the readout loop. """
-        self.stopRequest = True
+        self.stop_request = True
         for i in range(10):
-            if not self.stopRequest:
+            if not self.stop_request:
                 return
             QtCore.QCoreApplication.processEvents()
-            time.sleep(self.queryInterval/1000)
-    
+            time.sleep(self.query_interval/1000)
+
+
     @QtCore.Slot()
     def check_loop(self):
         """ Get position and update display. """
-        if self.stopRequest:
+        if self.stop_request:
             if self.module_state.can('stop'):
                 self.module_state.stop()
-            self.stopRequest = False
+            self.stop_request = False
             return
-        qi = self.queryInterval
+        qi = self.query_interval
         try:
             self.position = self.get_position()
 
@@ -101,8 +102,8 @@ class PolarMotorLogic(GenericLogic):
             qi = 3000
             self.log.exception("Exception in piezo status loop, throttling refresh rate.")
 
-        self.queryTimer.start(qi)
-        self.sigUpdatePolarMotorDisplay.emit()
+        self.query_timer.start(qi)
+        self.sig_update_polar_motor_display.emit()
 
 
     def set_position(self, degree):
@@ -111,13 +112,21 @@ class PolarMotorLogic(GenericLogic):
         '''
         self._pmotor.set_position(degree)
         self.position = self._pmotor.position
-        self.sigUpdatePolarMotorDisplay.emit()
+        self.sig_update_polar_motor_display.emit()
+
 
     def get_position(self):
+        """Get curent position
+
+        Returns:
+            float: current degree
+        """
         return self._pmotor.get_position()
 
 
     def home_motor(self):
+        """ To home the motor
+        """
         self._pmotor.home_motor()
        
 

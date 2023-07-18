@@ -95,7 +95,7 @@ class GalvoLogic(GenericLogic):
         qi = self.query_interval
         try:
             self.position = self.get_position()
-            self.diffvolt = [self.get_diff_voltage(0,1), self.get_diff_voltage(2,3)]
+            self.diff_volt = [self.get_diff_voltage(0,1), self.get_diff_voltage(2,3)]
         except:
             qi = 3000
             self.log.exception("Exception in galvo status loop, throttling refresh rate.")
