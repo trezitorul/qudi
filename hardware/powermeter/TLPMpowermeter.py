@@ -47,7 +47,7 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
     _power_meter = None
 
     def on_activate(self):
-        """ Startup the module 
+        """ Initialisation performed during activation of the module.
         """
         IDQuery = True
         resetDevice = True
@@ -84,7 +84,8 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
 
 
     def on_deactivate(self):
-        """ Stops the module """
+        """ Deinitialisation performed during deactivation of the module.
+        """
         self.tlPM.close()
 
     def getData(self):

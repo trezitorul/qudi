@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Buffer for simple data
+Flipper mirror logic module.
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -56,6 +56,10 @@ class FlipperMirrorLogic(GenericLogic):
 
 
     def set_mode(self, mode, num):
+        """ Sets mode of flipper mirror of specified number 'num'.
+        @param (str) mode: mode to set given mirror to; must be 'on' or 'off'
+        @param (int) num: number of flipper mirror that will move; either 1 or 2
+        """
         if num == 1:
             self._flipper1.SetMode(mode)
         else:
@@ -64,6 +68,8 @@ class FlipperMirrorLogic(GenericLogic):
 
 
     def home_mirrors(self):
+        """ Homes both flipper mirrors.
+        """
         self._flipper1.HomeMirror()
         self._flipper2.HomeMirror()
         

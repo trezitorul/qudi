@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
+
+Flipper mirror hardware module using Thorlabs Motion Control DLLs.
+
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -47,12 +50,14 @@ from Thorlabs.MotionControl.DeviceManagerCLI import DeviceNotReadyException
 from Thorlabs.MotionControl.FilterFlipperCLI import FilterFlipper
 
 class FlipperMirror(Base):
-    """ Hardware module for flipper mirror.
+    """ Hardware module for flipper mirror, using device ID to connect.
     """
 
     _deviceID = ConfigOption(name='deviceID', missing='error')
 
     def on_activate(self):
+        """ Initialisation performed during activation of the module.
+        """
         self.deviceID = self._deviceID
         self._FlipperMirror = self.SetupDevice(self.deviceID)
 
@@ -62,29 +67,32 @@ class FlipperMirror(Base):
         pass
     
     def on_deactivate(self):
+        """ Deinitialisation performed during deactivation of the module.
+        """
         self.device.StopPolling()
         self.device.Disconnect(True)
 
     
     def SetupDevice(self,deviceID):
         '''
-        Create mirrors
+        Create flipper mirror object.
+        @param (int) deviceID: serial number of flipper mirror to be used
         '''
         DeviceManagerCLI.BuildDeviceList()
 
         self.device = FilterFlipper.CreateFilterFlipper(str(deviceID))
 
-        self.device.Connect(deviceID) #this does not like the camera
+        self.device.Connect(deviceID)
         self.device.StartPolling(250)
         time.sleep(0.25)
         self.device.EnableDevice()
         time.sleep(0.25)
         return self.device
-        # pass
 
     def SetMode(self,mode):
         '''
-        turn the mirror 90 degrees in relative to the main body (on) or 0 degree (off)
+        Turn the mirror 90 degrees relative to the main body (on) or 0 degree (off)
+        @param (str) mode: mode to set mirror to; must be 'on' or 'off'
         '''
         if mode == 'on':
             self.device.SetPosition(2,60000)
@@ -93,11 +101,10 @@ class FlipperMirror(Base):
         else:
             print('wrong mode, try again')
         return
-        # pass
     
     def HomeMirror(self):
         '''
-        Home mirror
+        Homes mirror.
         '''
         self.device.Home(60000)
         return
