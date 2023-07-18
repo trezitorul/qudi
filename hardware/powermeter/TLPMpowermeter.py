@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """
+Thorlabs PM100D powermeter hardware module. Must have address to activate, does not use visa resource manager.
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,17 +34,12 @@ import time
 
 
 class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
-    """ Hardware module for Thorlabs PM100D powermeter.
+    """ Hardware module for Thorlabs PM100D powermeter using TLPM.
 
     Example config :
     powermeter:
-        module.Class: 'powermeter.PM100D.PM100D'
+        module.Class: 'powermeter.TLPMpowermeter.PowerMeter'
         address: 'USB0::0x1313::0x8078::P0013645::INSTR'
-
-    This module needs the ThorlabsPM100 package from PyPi, this package is not included in the environment
-    To add install it, type :
-    pip install ThorlabsPM100
-    in the Anaconda prompt after having activated qudi environment
     """
 
     _address = ConfigOption('address', missing='error')
@@ -51,7 +47,8 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
     _power_meter = None
 
     def on_activate(self):
-        """ Startup the module """
+        """ Startup the module 
+        """
         IDQuery = True
         resetDevice = True
         self.tlPM = TLPM()
@@ -68,16 +65,11 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
             # print("Resource name of device", i, ":", c_char_p(self.resourceName.raw).value)
         # print("")
         self.tlPM.close()
-        # time.sleep(5)
         i=0
         if i not in range(0, self.deviceCount.value):
             print(f"Device index {i} out of range [0,{self.deviceCount.value}]")
         else:
-            # print(self.resourceName)
             self.tlPM.getRsrcName(c_int(i), self.resourceName)
-            # print(self.resourceName)
-            # print(c_char_p(self.resourceName.raw).value)
-            # self.tlPM = TLPM()
             self.tlPM.open(self.resourceName, c_bool(IDQuery), c_bool(resetDevice))
 
             message = create_string_buffer(1024)
@@ -93,7 +85,6 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
 
     def on_deactivate(self):
         """ Stops the module """
-        # self._inst.close()
         self.tlPM.close()
 
     def getData(self):
@@ -105,7 +96,9 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
         return 1
 
     def get_power(self):
-        """ Return the power read from the ThorlabsPM100 package """
+        """ Return the power read from the ThorlabsPM100 package 
+        @return (float): power output in mW
+        """
         power =  c_double()
         self.tlPM.measPower(byref(power))
         self.power = power.value *10**6
@@ -113,25 +106,33 @@ class PowerMeter(Base, SimpleDataInterface, ProcessInterface):
         return self.power
 
     def get_process_value(self):
-        """ Return a measured value """
+        """ SimpleDataInterface function to return a measured value.
+        @return (float): power output in mW
+        """
         return self.get_power()
 
     def get_process_unit(self):
-        """ Return the unit that hte value is measured in as a tuple of ('abreviation', 'full unit name') """
-        return ('W', 'watt')
+        """ Return the unit that the value is measured in as a tuple of ('abreviation', 'full unit name') 
+        @return (tuple): units of value
+        """
+        return ('mW', 'milliwatt')
 
     def get_wavelength(self):
-        """ Return the current wavelength in nanometers """
+        """ Return the current wavelength in nanometers. NOT USED
+        @return (float): wavelength
+        """
         return self._power_meter.sense.correction.wavelength
 
     def set_wavelength(self, value=None):
-        """ Set the new wavelength in nanometers """
+        """ Set the new wavelength in nanometers
+        @param (float) value: wavelength 
+        """
         self.tlPM.setWavelength(c_double(value))
 
-        # return self.get_wavelength()
-
     def get_wavelength_range(self):
-        """ Return the wavelength range of the power meter in nanometers """
+        """ Return the wavelength range of the power meter in nanometers. NOT USED
+        @return (float): wavelength range
+        """
         return self._power_meter.sense.correction.minimum_beamdiameter,\
                self._power_meter.sense.correction.maximum_wavelength
 
