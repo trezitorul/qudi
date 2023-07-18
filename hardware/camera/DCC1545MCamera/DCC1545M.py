@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-This hardware module implement the camera interface to use an Thorlabs Camera.
+This hardware module implement the camera interface to use a Thorlabs Camera.
 It use a dll to inteface with the instruments via USB (only available physical interface)
-This module does aim at replacing ThorCam.
 
 ---
 
@@ -90,7 +89,6 @@ class DCC1545M(Base, CameraInterface):
 
         @return bool: Success ?
         """
-        # self.camera.disconnect()
         return True
 
 
@@ -101,6 +99,7 @@ class DCC1545M(Base, CameraInterface):
 
         Each pixel might be a float, integer or sub pixels
         """
+        # Number of acquired frames to average. Needs to be > 1
         return self.camera.acquire(3)
         
 

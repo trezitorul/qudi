@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+""" Hardware module for APT Piezo
 
-from hardware.Piezo.APTDevice_Piezo import APTDevice_Piezo
+"""
+
+from hardware.Piezo.APTDevice_Piezo import APTDevicePiezo
 import time
 
 from core.module import Base
@@ -44,15 +47,16 @@ class APTPiezo(Base, ConfocalDevInterface):
     :param channels: Tuple of indices (1-based) for the controller bay's channels.
     :param status_updates: Set to ``"auto"``, ``"polled"`` or ``"none"``.
     """
-    _deviceID = ConfigOption(name='deviceID', missing='warn')
-    _serial_port = ConfigOption(name='serial_port', missing='warn', default=None)
-    _is_second_piezo = ConfigOption(name='is_second_piezo', default=False)
+    deviceID = ConfigOption(name='deviceID', missing='warn')
+    serial_port = ConfigOption(name='serial_port', missing='warn', default=None)
+    is_second_piezo = ConfigOption(name='is_second_piezo', default=False)
     
 
     def on_activate(self):
-        """ Initialisation performed during activation of the module.
-         """
-        if (self._is_second_piezo):
+        """ 
+        Initialisation performed during activation of the module.
+        """
+        if (self.is_second_piezo):
             time.sleep(5)
 
         self.initialize()
@@ -66,11 +70,17 @@ class APTPiezo(Base, ConfocalDevInterface):
 
 
     def initialize(self, channels=(1,2)):
-        if (self._serial_port == None):
-            self.piezo = APTDevice_Piezo.create(deviceID=self._deviceID, 
+        """ Initialization of the APTDevicePiezo class
+
+        Args:
+            channels channels: Channels of the Piezo. Defaults to (1,2).
+        """
+        
+        if (self.serial_port == None):
+            self.piezo = APTDevicePiezo.create(deviceID=self.deviceID, 
                                                 channels=channels)
         else: 
-            self.piezo = APTDevice_Piezo(serial_port=self._serial_port, deviceID=self._deviceID, 
+            self.piezo = APTDevicePiezo(serial_port=self.serial_port, deviceID=self.deviceID, 
                                         channels=channels)
     
 
@@ -102,5 +112,13 @@ class APTPiezo(Base, ConfocalDevInterface):
         return round(self.piezo.get_position(bay=bay, channel=channel), 2)
     
     def get_max_travel(self, channel=0):
+        """ Get the maximum travel length of the piezo
 
-        return self.piezo.info[channel]["maxTravel"]
+        Args:
+            channel (int, optional): _description_. Defaults to 0.
+
+        Returns:
+            int: max travel
+        """
+
+        return self.piezo.info[channel]["max_travel"]
