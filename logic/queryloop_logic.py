@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Buffer for simple data
+Query loop logic module.
 
 Qudi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,16 +29,14 @@ from qtpy import QtCore
 
 
 class QueryLoopLogic(GenericLogic):
-    """ Logic module agreggating multiple hardware switches.
+    """ Logic module that emits a signal on a set interval. Can be used to update a
+    module that does not have a query loop.
     """
-
-    # powerMeter = Connector(interface='PowerMeterLogic')
-    # LACmotor = Connector(interface='LACLogic')
     
     queryInterval = ConfigOption('query_interval', 100)
 
     # signals
-    sigUpdateVariable = QtCore.Signal(bool)
+    sigUpdateVariable = QtCore.Signal()
     sigStartQuery = QtCore.Signal()
     sigStopQuery = QtCore.Signal()
 
@@ -47,8 +45,6 @@ class QueryLoopLogic(GenericLogic):
     def on_activate(self):
         """ Prepare logic module for work.
         """
-        # self._powermeter = self.powerMeter()
-        # self._LACmotor = self.LACmotor()
 
         self.stopRequest = False
         self.bufferLength = 100
@@ -104,19 +100,21 @@ class QueryLoopLogic(GenericLogic):
 
     @QtCore.Slot()
     def check_loop(self):
-        """ Get power and update display. """
+        """ Get variable and emit update signal. """
         if self.stopRequest:
             if self.module_state.can('stop'):
                 self.module_state.stop()
             self.stopRequest = False
             return
         qi = self.queryInterval
-        # try:
-        # self.position = self._powermeter.get_process_value()
+        # implement try except in the module using the loop
+        # Example:
+            # try:
+            # self.position = self._powermeter.get_process_value()
 
-        # except:
-        #     qi = 3000
-        #     self.log.exception("Exception in power meter status loop, throttling refresh rate.")
+            # except:
+            #     qi = 3000
+            #     self.log.exception("Exception in power meter status loop, throttling refresh rate.") 
 
         self.queryTimer.start(qi)
-        self.sigUpdateVariable.emit(False)
+        self.sigUpdateVariable.emit()
