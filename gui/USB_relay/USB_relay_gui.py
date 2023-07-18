@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+"""
+GUI module to control USB relay board with 16 channels.
+
+Qudi is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Qudi is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Qudi. If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
+top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
+"""
+
 import os
 
 from gui.guibase import GUIBase
@@ -22,7 +43,7 @@ class RelayMainWindow(QtWidgets.QMainWindow):
         self.show()
 
 class ErrorDialog(QtWidgets.QDialog):
-    """ Create the Main Window based on the *.ui file. """
+    """ Create the error dialog window based on the *.ui file. """
 
     def __init__(self):
         # Get the path to the *.ui file
@@ -34,8 +55,7 @@ class ErrorDialog(QtWidgets.QDialog):
         uic.loadUi(ui_file, self)
 
 class RelayGUI(GUIBase):
-    """
-
+    """ Relay board GUI main class.
     """
     
     # connectors
@@ -47,7 +67,6 @@ class RelayGUI(GUIBase):
         isOn.append(False)
 
     errorCount = 1
-
 
     def __init__(self, config, **kwargs):
         super().__init__(config=config, **kwargs)
@@ -61,8 +80,7 @@ class RelayGUI(GUIBase):
         #return 0
 
     def on_activate(self):
-        """ 
-
+        """ Initialize, connect and configure the relay board GUI.
         """
 
         # CONNECTORS PART 2 ###################################################
@@ -96,7 +114,6 @@ class RelayGUI(GUIBase):
         self.buttons[17] = self._mw.allOffButton
 
         for i in range(1,17):
-            # self.buttons[i].clicked.connect(lambda: self.toggle(i))
             self.buttons[i].setStyleSheet("background-color : grey")
         
         self._mw.pushButton_1.clicked.connect(lambda: self.toggle(1))
@@ -121,7 +138,6 @@ class RelayGUI(GUIBase):
 
         self._dw.continueButton.clicked.connect(self.continueCheck)
 
-
         # Connect signals
         self._relaylogic.sigError.connect(self.errorHandling)
 
@@ -129,8 +145,8 @@ class RelayGUI(GUIBase):
 
 
     def toggle(self, chan):
-        """ 
-        Toggle channels.
+        """ Toggle a channel.
+        @param (int) chan: channel number to be toggled.
         """
         if self.isOn[chan]:
             self._relaylogic.switchOff(chan)
@@ -142,18 +158,24 @@ class RelayGUI(GUIBase):
             self.buttons[chan].setStyleSheet("background-color : green")
 
     def allOn(self):
+        """ Turns all channels on.
+        """
         self._relaylogic.allOn()
         for i in range(1,17):
             self.isOn[i] = True
             self.buttons[i].setStyleSheet("background-color : green")
 
     def allOff(self):
+        """ Turns all channels off.
+        """
         self._relaylogic.allOff()
         for i in range(1,17):
             self.isOn[i] = False
             self.buttons[i].setStyleSheet("background-color : grey")
 
     def errorHandling(self):
+        """ Disabled buttons and displays error dialog when safety error is triggered..
+        """
         for i in range(1,17):
             self.isOn[i] = False
             self.buttons[i].setStyleSheet("background-color : grey")
@@ -165,6 +187,9 @@ class RelayGUI(GUIBase):
         self._dw.show()
 
     def continueCheck(self):
+        """ Continues check for safety error; enables buttons again and hides window if safety error is gone.
+        Otherwise, updates error message.
+        """
         if self._relaylogic.getIsSafe():
 
             for i in range(18):

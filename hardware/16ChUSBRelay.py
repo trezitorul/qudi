@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+"""
+Hardware module for 16 channel USB Relay Board from Sainsmart.
+
+Qudi is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Qudi is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Qudi. If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) the Qudi Developers. See the COPYRIGHT.txt file at the
+top-level directory of this distribution and at <https://github.com/Ulm-IQO/qudi/>
+"""
+
 import serial
 import time
 
@@ -5,7 +26,17 @@ from core.module import Base
 from core.configoption import ConfigOption
 
 class USB_Relay(Base):
+    """ USB relay board with 16 channels.
+
+    Example config for copy-paste:
+
+    16Ch_Relay:
+        module.Class: '16ChUSBRelay.USB_Relay'
+        com_port: 'COM15'
+
+    """
     
+    # List of on/off byte commands for each channel
     channels = []
     for i in range(17):
         channels.append(0)
@@ -47,23 +78,39 @@ class USB_Relay(Base):
         Deinitialisation performed during deactivation of the module.
         """
         self.allOff()
+        time.sleep(3)
         self.close()
                 
     def switchOn(self, chan):
+        """ Turns channel number 'chan' on.
+        @param (int) chan: channel number to be turned on.
+        """
         self.ser.write(self.channels[chan]['on'])
 
     def switchOff(self, chan):
+        """ Turns channel number 'chan' off.
+        @param (int) chan: channel number to be turned off.
+        """
         self.ser.write(self.channels[chan]['off'])
 
     def allOn(self):
+        """ Turns all channels on.
+        """
         self.ser.write(self.channels[0]['on'])
 
     def allOff(self):
+        """ Turns all channels off.
+        """
         self.ser.write(self.channels[0]['off'])
 
     def close(self):
+        """ Closes serial connection.
+        """
         self.ser.close()
 
     def getStatus(self):
+        """ Sends command to read status. Cannot understand the return message.
+        @return bytes: a string of bytes from the relay board. (meaning unknown)
+        """
         self.ser.write(self.statusReturn)
         return self.ser.readline()
