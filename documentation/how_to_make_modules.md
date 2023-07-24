@@ -13,15 +13,15 @@ from core.module import Base
 from core.configoption import ConfigOption
 
 class HardwareModule (Base):
-  config = ConfigOption(name='config', missing='warn')
+    config = ConfigOption(name='config', missing='warn')
+  
+    def on_activate(self):
+        # What the module must do on activation
+  
+    def on_deactivate(self):
+        # What the module must do on deactivation
 
-  def on_activate(self):
-    # What the module must do on activation
-
-  def on_deactivate(self):
-    # What the module must do on deactivation
-
-  # Other user-defined functions or inherited functions from interface
+    # Other user-defined functions or inherited functions from interface
 ```
 
 Use the hardware manufacturer's library if applicable. Depending on the desired logic, an interface (or multiple) can be used to abstract the hardware functions. If the interface is used, the hardware will inherit all of the abstract methods from the interface. There can also be additional, specific functions to the hardware that are not inherited from the interface. All hardware modules must inherit the Base class from core.module.
@@ -36,19 +36,22 @@ from qtpy import QtCore
 from core.configoption import ConfigOption   # Optional, if you need additional config options from .cfg files
 
 class LogicModule(GenericLogic):
-  harware_module = Connector(interface='HardwareModule')
-  additional_config = ConfigOption(name='additional')
-
-  sig_update_display = QtCore.Signal() # Signals for connecting modules
+    harware_module = Connector(interface='HardwareModule')
+    additional_config = ConfigOption(name='additional')
+    
+    sig_update_display = QtCore.Signal() # Signals for connecting modules
+    
+    def on_activate(self):
+        self._hardware_module = self.hardware_module() # To use the hardware module's functions
+        # Other steps the module must do on activation
+    
+    def on_deactivate(self):
+        # What the module must do on deactivation
+    
+    # Other user-defined functions
+    def use_functions_from_hardware(self):
+        self._hardware_module.function_from_hardware()
   
-  def on_activate(self):
-    self._hardware_module = self.hardware_module() # To use the hardware module's functions
-    # Other steps the module must do on activation
-
-  def on_deactivate(self):
-    # What the module must do on deactivation
-
-  # Other user-defined functions
 ```
 
 Use start a query loop and constantly perform a certatin actions (collect data, update display, etc.) Below is for constantly getting data and updating the display:
