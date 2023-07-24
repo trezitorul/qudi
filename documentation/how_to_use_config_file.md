@@ -29,7 +29,7 @@ directory of our software.
 Let's have a look on an example scenario of an (incomplete) configuration:
 ```yaml
 hardware:
-    <identifier>:
+    <hardware-identifier>:
         module.Class: '<foldername>.<filename>.<classname>'
         attribute_string_example:   'example_text'
         attribute_int_example:      12345
@@ -46,18 +46,18 @@ hardware:
 
 
 logic:
-    <identifier-other>:
+    <logic-identifier>:
         module.Class: '<foldername2>.<filename2>.<classname2>'
         attribute1: 'assigned_value1'
         connect:
-            <keyword_in1>: '<identifier>.<keyword_out1>'
+            <keyword_in1>: '<hardware-identifier>.<keyword_out1>'
 
 gui:
-    <identifier-other2>:
+    <gui-identifier>:
         module.Class: '<foldername3>.<filename3>.<classname3>'
         attribute1: 'assigned_value1'
         connect:
-            <keyword_in2>: '<identifier-other>.<keyword_out2>'
+            <keyword_in2>: '<logic-identifier>.<keyword_out2>'
 ```
 
 Each of this categories contains an `<identifier>`, i.e.
@@ -69,7 +69,7 @@ notation (directory separated by points).
 
 For instance:
 In the category `hardware` you can specify the attribute `module.Class` in the
-`<identifier>` as
+`<hardware-identifier>` as
 
 ```yaml
 module.Class: 'ni_card.NICard'
@@ -124,9 +124,19 @@ if self.<optional_module>.is_connected:
     self.<optional_module>().do_stuff()
 ```
 
-### Loading your config file
+## Config options
 
-To load a config file, create a file called load.cfg. Specify the location (within the config folder) of the config file you'd like to load using the configfile keyword. If there is no functioning load.cfg file, default.cfg will be loaded automatically. There can only be one load.cfg file and it must be created inside the config folder. An example load.cfg that points to tutorial_01_getting_started.cfg is below.
+Config options allow additional information to be passed to modules on startup.
+
+Within the module class, config options are declared in the following format. Only the name is required. More documentation can be found within the `ConfigOption` class in Qudi's core folder. The `name` variable corresponds to the attributes listed in the example config file.
+
+```python
+config_option = ConfigOption(name="attribute1", default=None, missing='nothing')
+```
+
+## Loading your config file
+
+To load a config file, create a file called load.cfg. Specify the location (within the config folder) of the config file you'd like to load using the `configfile` keyword. If there is no functioning load.cfg file, default.cfg will be loaded automatically. There can only be one load.cfg file and it must be created inside the config folder. An example load.cfg that points to tutorial_01_getting_started.cfg is below.
 
 ```yaml
 configfile:
