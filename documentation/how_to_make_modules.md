@@ -3,7 +3,7 @@
 
 ## Decide on the structure
 
-A typical structure follows hardware->logic->GUI. In some cases where additional logic modules are needed, use connectors to share the logic. This is the only module that can be connected to others with the same type. 
+A typical structure follows hardware->logic->GUI. In some cases where additional logic modules are needed, use connectors to share the logic. Logic modules are the only module type that can be connected to others of the same type. 
 
 ## Creating a hardware module
 
@@ -36,6 +36,7 @@ from qtpy import QtCore
 from core.configoption import ConfigOption   # Optional, if you need additional config options from .cfg files
 
 class LogicModule(GenericLogic):
+    # Either directly to the hardware module or use an interface
     harware_module = Connector(interface='HardwareModule')
     additional_config = ConfigOption(name='additional')
     
@@ -123,7 +124,7 @@ class LogicModule(GenericLogic):
 
 Start by making a .ui file for the main window. This can be easily done with the QtPy designer application. If Qudi is installed correctly, it should come with the environment and you can simply type designer in the terminal to open the app. In designer, various features can be added for the user to interact with or to display information. Change the object name of all relevant buttons or features to best reflect their purposes. The .ui file must be stored in the same folder as the GUI python file.
 
-In the GUI python file, there is a class for the GUI module itself and a class for each QtWidgets window object. In most cases, the only window will be the main window. The main window is created and shown during activation.
+In the GUI python file, there is a class for the GUI module itself and a class for each QtWidgets window object. In most cases, the only window will be the main window. The main window is created and shown during activation. The new GUI class must inherit the GUIBase class.
 
 Basic structure of a GUI module:
 ```python
@@ -191,4 +192,31 @@ class ExampleGUI(GUIBase):
 
 ## Creating an interface
 
+An interface allows different hardware devices to be interchanged, making logic modules reusable. Interfaces inherit the interface metaclass and only consist of abstract interface methods. These methods are empty and must be reimplemented in the hardware modules that inherit them.
+
+Basic structure of an interface:
+```python
+from core.interface import abstract_interface_method
+from core.meta import InterfaceMetaclass
+
+
+class ExampleInterface(metaclass=InterfaceMetaclass):
+
+    @abstract_interface_method
+    def set_value(self, value):
+        """ Set a value
+        @param float value: desired new value
+        """
+        pass
+
+    @abstract_interface_method
+    def get_value(self):
+        """ Get a value
+        @return float
+        """
+        pass
+```
+
 ## Creating an interfuse module
+
+An interfuse is a type of logic module that inherits an interface. It allows a logic module to be used in a way that it was not initially intended to be used and essentially adds an extra layer between the main logic and the hardware. These have the same structure as a logic module but they also reimplement all of the functions that they inherit from their interface.
