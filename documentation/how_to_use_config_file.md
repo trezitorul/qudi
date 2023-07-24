@@ -126,7 +126,7 @@ if self.<optional_module>.is_connected:
 
 ### Loading your config file
 
-To load a config file, specify the name and location within load.cfg using the configfile keyword. If there is no load.cfg file, default.cfg will be loaded automatically. There can only be one load.cfg file and it must be created inside the config folder. An example load.cfg that points to tutorial_01_getting_started.cfg is below.
+To load a config file, create a file called load.cfg. Specify the location (within the config folder) of the config file you'd like to load using the configfile keyword. If there is no functioning load.cfg file, default.cfg will be loaded automatically. There can only be one load.cfg file and it must be created inside the config folder. An example load.cfg that points to tutorial_01_getting_started.cfg is below.
 
 ```yaml
 configfile:
