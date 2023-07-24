@@ -8,7 +8,7 @@ A typical structure follows hardware->logic->GUI. In some cases where additional
 ## Creating a hardware module
 
 Basic structure of a hardware modules:
-```
+```python
 from core.module import Base
 from core.configoption import ConfigOption
 
@@ -28,8 +28,8 @@ Use the hardware manufacturer's library if applicable. Depending on the desired 
 
 ## Creating a logic module
 
-Basic structure of a hardware modules:
-```
+Basic structure of a logic module:
+```python
 from logic.generic_logic import GenericLogic
 from core.connector import Connector
 from qtpy import QtCore
@@ -54,8 +54,8 @@ class LogicModule(GenericLogic):
   
 ```
 
-Use a query loop to constantly perform a certatin actions (collect data, update display, etc.). Below is an example for constantly collecting data and updating the display:
-```
+Use a query loop to constantly perform a certain action (collect data, update display, etc.). A query loop cannot be started or stopped from another module, so a connector is not enough to call ```start_query_loop()``` or ```stop_query_loop()```. These functions must be called from the logic of triggered with signals. Below is an example for constantly collecting data and updating the display:
+```python
 from qtpy import QtCore
 from logic.generic_logic import GenericLogic
 
@@ -121,7 +121,73 @@ class LogicModule(GenericLogic):
 
 ## Creating a GUI module
 
-Start by making a ui file. This can be easily done with the QtPy designer application. If qudi is installed correctly, it should come with the environment and you can simply type designer in the terminal to open the app. Change the object name of any 
+Start by making a .ui file for the main window. This can be easily done with the QtPy designer application. If Qudi is installed correctly, it should come with the environment and you can simply type designer in the terminal to open the app. In designer, various features can be added for the user to interact with or to display information. Change the object name of all relevant buttons or features to best reflect their purposes. The .ui file must be stored in the same folder as the GUI python file.
+
+In the GUI python file, there is a class for the GUI module itself and a class for each QtWidgets window object. In most cases, the only window will be the main window. The main window is created and shown during activation.
+
+Basic structure of a GUI module:
+```python
+import os
+
+from gui.guibase import GUIBase
+from core.connector import Connector
+from qtpy import QtWidgets
+from qtpy import uic
+
+class ExampleMainWindow(QtWidgets.QMainWindow):
+    """ Create the Main Window based on the *.ui file. """
+
+    def __init__(self):
+        # Get the path to the *.ui file
+        this_dir = os.path.dirname(__file__)
+        ui_file = os.path.join(this_dir, 'ui_exampe_gui.ui')
+
+        # Load it
+        super().__init__()
+        uic.loadUi(ui_file, self)
+        self.show()
+
+class ExampleGUI(GUIBase):
+    logic = Connector(interface='LogicModule')
+
+    def __init__(self, config, **kwargs):
+        super().__init__(config=config, **kwargs)
+
+
+    def on_activate(self):
+        """ Definition and initialisation of the GUI."""
+        self._logic = self.logic()
+
+        self._mw = ExampleMainWindow()
+
+        # Connect buttons and spinboxes to functions to handle user interactions. Feature name comes from .ui file.
+        self._mw.myButton.clicked.connect(self.myFunction)
+        self._mw.mySpinBox.valueChanged.connect(self.changeValue)
+
+        # Connect signals (in this example, the GUI is triggered by the logic to update the display)
+        self._logic.sigUpdateDisplay.connect(self.updateDisplay)
+
+        self.show()
+
+    def show(self):
+        """Make main window visible and put it above all other windows. """
+        self._mw.show()
+        self._mw.activateWindow()
+        self._mw.raise_()
+
+    # Other user-defined functions
+
+    def myFunction(self):
+        # Does something to respond to user
+
+    def changeValue(self):
+        # Stores value from spinbox. Should then use value to perform an action.
+        self.myValue = self._mw.mySpinbox.value() 
+
+    def updateDisplay(self):
+        # Displays a value that comes from the logic.
+        self.displayLabel.setText(self._logic.value)
+```
 
 ## Creating an interface
 
