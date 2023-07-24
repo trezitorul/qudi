@@ -118,8 +118,17 @@ mention it
 
 The logic module can then test if the module is connected by checking the is_connected property
 
+
 ```python
 if self.<optional_module>.is_connected:
     self.<optional_module>().do_stuff()
 ```
 
+### Loading your config file
+
+To load a config file, specify the name and location within load.cfg using the configfile keyword. If there is no load.cfg file, default.cfg will be loaded automatically. There can only be one load.cfg file and it must be created inside the config folder. An example load.cfg that points to tutorial_01_getting_started.cfg is below.
+
+```yaml
+configfile:
+    example/tutorial_01_getting_started.cfg
+```
