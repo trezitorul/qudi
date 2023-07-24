@@ -54,7 +54,7 @@ class LogicModule(GenericLogic):
   
 ```
 
-Use start a query loop and constantly perform a certatin actions (collect data, update display, etc.) Below is for constantly getting data and updating the display:
+Use a query loop to constantly perform a certatin actions (collect data, update display, etc.). Below is an example for constantly collecting data and updating the display:
 ```
 from qtpy import QtCore
 from logic.generic_logic import GenericLogic
@@ -115,10 +115,13 @@ class LogicModule(GenericLogic):
         self.query_timer.start(qi)
         self.sig_update_display.emit()
 
+    def get_data(self):
+        # Get data
 ```
 
-
 ## Creating a GUI module
+
+Start by making a ui file. This can be easily done with the QtPy designer application. If qudi is installed correctly, it should come with the environment and you can simply type designer in the terminal to open the app. Change the object name of any 
 
 ## Creating an interface
 
