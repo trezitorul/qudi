@@ -2,7 +2,6 @@
 
 ## Decide on the structure
 
-
 ## Creating a hardware module
 
 ## Creating a logic module

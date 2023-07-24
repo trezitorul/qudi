@@ -20,6 +20,9 @@ use Qt formatting.
 
 Class names should be in CamelCase.
 
+Connectors names should be lowercase with underscores as word separators. Ex: apt_piezo_1
+Connectors when called inside on_activate functions should have the same name with an underscore as prefix. Ex: _apt_piezo_1
+
 File names need to be lowercase with underscores as word separators.
 Qt .ui files are prefixed with ui\_ and generally named like the Python file that loads them.
 
